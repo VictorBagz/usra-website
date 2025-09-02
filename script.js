@@ -401,63 +401,8 @@ document.querySelector('.newsletter-form').addEventListener('submit', function(e
     }
 });
 
-// Notification system
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        </div>
-    `;
-    
-    // Add styles
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#4CAF50' : '#2196F3'};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 5px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 300px;
-    `;
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Close button functionality
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    });
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (document.body.contains(notification)) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }
-    }, 5000);
-}
+// Legacy notification function - replaced by enhanced version above
+// This is kept for backwards compatibility but redirects to the new function
 
 // Parallax effect for hero section
 window.addEventListener('scroll', () => {
@@ -571,6 +516,324 @@ document.querySelectorAll('[title]').forEach(element => {
 });
 
 console.log('USRA Website loaded successfully! 🏉');
+
+// Quick Win Improvements for Better UX
+
+// 1. Enhanced loading states function
+function showLoading(element, message = 'Loading...') {
+    if (!element) return;
+    const originalContent = element.innerHTML;
+    element.setAttribute('data-original-content', originalContent);
+    element.innerHTML = `<span class="loading"></span> ${message}`;
+    element.disabled = true;
+    return originalContent;
+}
+
+function hideLoading(element, originalContent = null) {
+    if (!element) return;
+    const content = originalContent || element.getAttribute('data-original-content');
+    if (content) {
+        element.innerHTML = content;
+        element.removeAttribute('data-original-content');
+    }
+    element.disabled = false;
+}
+
+// 2. Global error boundary for better UX
+window.addEventListener('error', (e) => {
+    console.error('Global error:', e.error || e);
+    showNotification('Something went wrong. Please try again.', 'error');
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+    console.error('Unhandled promise rejection:', e.reason);
+    showNotification('An unexpected error occurred. Please refresh the page.', 'error');
+    e.preventDefault(); // Prevent the default console error
+});
+
+// 3. Network status detection and user feedback
+let isOnline = navigator.onLine;
+
+function updateNetworkStatus() {
+    const networkIndicator = document.getElementById('networkStatus');
+    if (networkIndicator) {
+        networkIndicator.className = isOnline ? 'network-online' : 'network-offline';
+        networkIndicator.innerHTML = isOnline 
+            ? '<i class="fas fa-wifi"></i> Online' 
+            : '<i class="fas fa-wifi-slash"></i> Offline';
+    }
+}
+
+window.addEventListener('online', () => {
+    isOnline = true;
+    updateNetworkStatus();
+    showNotification('Connection restored! You\'re back online.', 'success');
+});
+
+window.addEventListener('offline', () => {
+    isOnline = false;
+    updateNetworkStatus();
+    showNotification('You\'re offline. Some features may not work.', 'warning');
+});
+
+// 4. Auto-save functionality for forms
+function autoSave(formData, key, expiryMinutes = 30) {
+    try {
+        const data = {
+            formData: formData,
+            timestamp: Date.now(),
+            expiry: Date.now() + (expiryMinutes * 60 * 1000)
+        };
+        localStorage.setItem(`autosave_${key}`, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Auto-save failed:', e);
+    }
+}
+
+function loadAutoSave(key) {
+    try {
+        const saved = localStorage.getItem(`autosave_${key}`);
+        if (!saved) return null;
+        
+        const data = JSON.parse(saved);
+        if (Date.now() > data.expiry) {
+            localStorage.removeItem(`autosave_${key}`);
+            return null;
+        }
+        return data.formData;
+    } catch (e) {
+        console.warn('Load auto-save failed:', e);
+        return null;
+    }
+}
+
+function clearAutoSave(key) {
+    try {
+        localStorage.removeItem(`autosave_${key}`);
+    } catch (e) {
+        console.warn('Clear auto-save failed:', e);
+    }
+}
+
+// 5. Enhanced notification system with different types
+function showNotification(message, type = 'info', duration = 5000) {
+    // Remove existing notifications of the same type
+    const existing = document.querySelectorAll(`.notification-${type}`);
+    existing.forEach(el => {
+        if (document.body.contains(el)) {
+            document.body.removeChild(el);
+        }
+    });
+
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    };
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="${icons[type] || icons.info}"></i>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${colors[type] || colors.info};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 350px;
+        font-family: inherit;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Close button functionality
+    const closeBtn = notification.querySelector('.notification-close');
+    const closeNotification = () => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    };
+    
+    closeBtn.addEventListener('click', closeNotification);
+    
+    // Auto remove
+    if (duration > 0) {
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                closeNotification();
+            }
+        }, duration);
+    }
+    
+    return notification;
+}
+
+// 6. Performance monitoring and optimization
+function measurePerformance(name, fn) {
+    return async function(...args) {
+        const start = performance.now();
+        try {
+            const result = await fn.apply(this, args);
+            const end = performance.now();
+            console.log(`${name} took ${(end - start).toFixed(2)}ms`);
+            return result;
+        } catch (error) {
+            const end = performance.now();
+            console.error(`${name} failed after ${(end - start).toFixed(2)}ms:`, error);
+            throw error;
+        }
+    };
+}
+
+// 7. Initialize auto-save for forms
+function initAutoSave() {
+    const forms = document.querySelectorAll('form[data-autosave]');
+    forms.forEach(form => {
+        const key = form.getAttribute('data-autosave') || 'default';
+        
+        // Load saved data on page load
+        const savedData = loadAutoSave(key);
+        if (savedData) {
+            const shouldRestore = confirm('Found unsaved form data. Would you like to restore it?');
+            if (shouldRestore) {
+                Object.keys(savedData).forEach(fieldName => {
+                    const field = form.querySelector(`[name="${fieldName}"]`);
+                    if (field && field.type !== 'file') {
+                        field.value = savedData[fieldName];
+                    }
+                });
+                showNotification('Form data restored from auto-save', 'success');
+            } else {
+                clearAutoSave(key);
+            }
+        }
+        
+        // Auto-save on input changes
+        form.addEventListener('input', debounce(() => {
+            const formData = new FormData(form);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (form.querySelector(`[name="${key}"]`).type !== 'file') {
+                    data[key] = value;
+                }
+            }
+            autoSave(data, key);
+        }, 2000));
+        
+        // Clear auto-save on successful submit
+        form.addEventListener('submit', () => {
+            // Small delay to allow form processing
+            setTimeout(() => {
+                if (!form.querySelector('.error')) {
+                    clearAutoSave(key);
+                }
+            }, 1000);
+        });
+    });
+}
+
+// 8. Debounce utility for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// 9. Initialize improvements when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Add network status indicator to navbar if it doesn't exist
+    const navbar = document.querySelector('.nav-container');
+    if (navbar && !document.getElementById('networkStatus')) {
+        const networkStatus = document.createElement('div');
+        networkStatus.id = 'networkStatus';
+        networkStatus.style.cssText = `
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            margin-left: 10px;
+        `;
+        navbar.appendChild(networkStatus);
+        updateNetworkStatus();
+    }
+    
+    // Initialize auto-save
+    initAutoSave();
+    
+    // Add retry functionality to failed requests
+    window.retryFailedRequest = function(requestFn, maxRetries = 3) {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            
+            function attempt() {
+                attempts++;
+                requestFn()
+                    .then(resolve)
+                    .catch(error => {
+                        if (attempts < maxRetries && !isOnline) {
+                            showNotification(`Attempt ${attempts} failed. Retrying when online...`, 'warning');
+                            window.addEventListener('online', attempt, { once: true });
+                        } else if (attempts < maxRetries) {
+                            setTimeout(attempt, 1000 * attempts); // Exponential backoff
+                        } else {
+                            reject(error);
+                        }
+                    });
+            }
+            
+            attempt();
+        });
+    };
+});
+
+// 10. Expose utilities globally for use in other scripts
+window.USRAUtils = {
+    showLoading,
+    hideLoading,
+    showNotification,
+    autoSave,
+    loadAutoSave,
+    clearAutoSave,
+    measurePerformance,
+    debounce,
+    retryFailedRequest: window.retryFailedRequest
+};
 
 // Gallery Lightbox
 (function initLightbox(){
