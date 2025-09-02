@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uganda Schools Rugby Association (USRA)</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="photos/usraLogo.png" alt="USRA Logo">
+                <span>USRA</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li class="nav-more">
+                    <a href="#" class="nav-link">More <i class="fas fa-chevron-down" style="font-size:.8rem;"></i></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="workplan.html">Workplan 2025</a></li>
+                        <li><a href="budget.html">Budget</a></li>
+                    </ul>
+                </li>
+                <li><a href="#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="registration.html" class="nav-link">Registration</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text" data-aos="fade-up" data-aos-duration="1000">
+                <h1>Naturing young, Rugby talents</h1>
+                <p>The Uganda Schools Rugby Association (USRA) governs and promotes rugby in primary and secondary schools across Uganda, building on a strong foundation laid by senior educators who were passionate about the game of rugby in Uganda since the late 1990s.</p>
+                <div class="hero-buttons">
+                    <a href="registration.html" class="btn btn-primary">Register Now</a>
+                    <a href="#about" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>About USRA</h2>
+                <p>Empowering young athletes through rugby excellence</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text about-card" data-aos="fade-right" data-aos-delay="150">
+                    <span class="about-tag">About USRA</span>
+                    <h3>Our Story</h3>
+                    <div class="about-divider"></div>
+                    <p>Founded in the late 1990s by a small group of passionate teachers from pioneering schools including St. Mary's College Kisubi (SMACK), Namilyango College, and King's College Budo, the Uganda Schools Rugby Association (USRA) began as a grassroots movement to introduce rugby into schools. What started with a handful of enthusiastic teams has grown into a nationwide organization overseeing the development and management of both boys’ and girls’ rugby across both the 15s and 7s formats—in primary and secondary schools throughout Uganda.</p>
+
+                    <p>Over the years, USRA has been instrumental in nurturing young talent, establishing structured competitions, and building a strong foundation for the sport at the school level, contributing significantly to the national rugby ecosystem.</p>
+                    <h3>Our Mission</h3>
+                    <div class="about-divider"></div>
+                    <p>To promote and develop rugby in schools nationwide, providing opportunities for student athletes to grow, learn, and compete in a safe, supportive, and inclusive environment.</p>
+                    
+                    <h3>Our Vision</h3>
+                    <div class="about-divider"></div>
+                    <p>To foster a culture of excellence, sportsmanship, and teamwork in school rugby, developing well-rounded individuals who excel on and off the pitch.</p>
+
+                    <div class="features-grid">
+                        <div class="feature">
+                            <i class="fas fa-trophy"></i>
+                            <h4>Competitions</h4>
+                            <p>Annual tournaments and leagues</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h4>Training</h4>
+                            <p>Professional coaching programs</p>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-users"></i>
+                            <h4>Community</h4>
+                            <p>Building lasting friendships</p>
+                        </div>
+                    </div>
+
+                    <h3>Our Goals</h3>
+                    <div class="about-divider"></div>
+                    <p>The objectives that drive our mission forward.</p>
+                    <ol class="goals-list" style="margin-left: 1.25rem; line-height: 1.8;">
+                        <li>Foster a love for the game and promote rugby development programs</li>
+                        <li>Provide training, resources, and support for coaches, players, and officials</li>
+                        <li>Organize competitive tournaments and events that showcase student-athlete talent</li>
+                        <li>Emphasize sportsmanship, discipline, and respect among young student athletes.</li>
+                        <li>Collaborate with schools, local communities, and rugby organizations to grow the sport</li>
+                        <li>Empower the next generation of rugby players, leaders, and citizens through local and international exposure</li>
+                    </ol>
+                </div>
+                <div class="about-image about-card" data-aos="fade-left" data-aos-delay="250">
+                    <img src="photos/pi1 (74) (1).JPG" alt="Rugby Team">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chairman's Message Section -->
+    <section id="chairman" class="chairman">
+        <div class="container">
+            <div class="chairman-content" data-aos="fade-up">
+                <div class="chairman-image">
+                    <img src="photos/dixon.jpg" alt="Chairman">
+                </div>
+                <div class="chairman-message">
+                    <h2>Chairman's Message</h2>
+                    <h3>Mr. Okello Dickson Odyek</h3>
+                    <p>Dear Rugby Enthusiasts, all Stakeholders and Partners;
+
+It is with great pride and excitement that I welcome you to the official website of the Uganda Schools Rugby Association (USRA). This platform marks a significant milestone in our journey to grow, promote, and professionalize school rugby across Uganda.</p>
+                    
+                    <p>The development of this website reflects our commitment to transparency, communication, and engagement with all our stakeholders—from students and coaches to parents, alumni, rugby fans and sponsors. Here, you will find up-to-date information on fixtures, results, tournaments, development programs, and key initiatives aimed at nurturing young Rugby talent in Uganda at school level.
+
+We strongly believe that rugby, a fast growing sports in schools, is not just a game but a powerful tool for character building, discipline, teamwork, and national pride. Through this digital platform, we aim to share the inspiring stories from our schools, highlight achievements, and provide resources that support the holistic development of our players.</p>
+                    
+                    <p>On behalf of the USRA Executive Committee, and on behalf of all our membership, I thank all who have contributed to making this vision a reality. We invite you to explore, engage, and grow with us as we take schools rugby to greater heights.</p>
+                    
+                    <div class="chairman-signature">
+                        <p><strong>Okello Dickson</strong></p>
+                        <span>Chairman, Uganda Schools Rugby Association</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section id="statistics" class="statistics">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Our Impact</h2>
+                <p>Numbers that tell our story</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <div class="stat-number" data-target="150">0</div>
+                    <div class="stat-label">Member Schools</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="stat-number" data-target="2500">0</div>
+                    <div class="stat-label">Registered Players</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-number" data-target="25">0</div>
+                    <div class="stat-label">Tournaments Won</div>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-number" data-target="15">0</div>
+                    <div class="stat-label">Years of Excellence</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <!-- Athletes Medical Fund Section -->
+    <section id="medical-fund" class="medical-fund">
+        <div class="container">
+            <div class="mf-wrap" data-aos="fade-up">
+                <div class="mf-content">
+                    <span class="about-tag">Welfare & Safety</span>
+                    <h2>Athletes Medical Fund</h2>
+                    <div class="about-divider"></div>
+                    <p>
+                        The Athletes Medical Fund supports student rugby players who suffer injuries while
+                        representing their schools. It provides timely medical assistance, injury management,
+                        and rehabilitation support so that our athletes can recover safely and return to the
+                        sport they love.
+                    </p>
+                    <ul class="mf-points">
+                        <li>Emergency medical support during competitions</li>
+                        <li>Subsidized care for approved injuries</li>
+                        <li>Clear claim and verification process via USRA</li>
+                    </ul>
+                    <div class="mf-actions">
+                        <a class="btn btn-primary" href="medical-fund.html">Learn more</a>
+                    </div>
+                </div>
+                <div class="mf-visual" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="mf-card">
+                        <img src="photos/medicalfund (1).jpeg" alt="Athletes Medical Fund">
+                        <div class="mf-logo">
+                            <img src="photos/medicalfundLogo.jpeg" alt="Fund Logo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Photo Album</h2>
+                <p>Student rugby players in action</p>
+            </div>
+            <div class="gallery-grid">
+                <!-- Replace src with assets/images files when available -->
+                <a href="photos/pi1 (24) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Line-out leap">
+                    <img src="photos/pi1 (24) (1).jpg" alt="Rugby action 1">
+                </a>
+                <a href="photos/pi1 (10) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Tackle and drive">
+                    <img src="photos/pi1 (10) (1).jpg" alt="Rugby action 2">
+                </a>
+                <a href="photos/pi1 (63) (1).JPG" class="gallery-item" data-aos="zoom-in" data-title="Team scrum">
+                    <img src="photos/pi1 (63) (1).JPG" alt="Rugby action 3">
+                </a>
+                <a href="photos/pi1 (46) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Sprint to the line">
+                    <img src="photos/pi1 (46) (1).jpg" alt="Rugby action 4">
+                </a>
+                <a href="photos/pi1 (43) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Kickoff focus">
+                    <img src="photos/pi1 (43) (1).jpg" alt="Rugby action 5">
+                </a>
+                <a href="photos/pi1 (78) (1).JPG" class="gallery-item" data-aos="zoom-in" data-title="Victory huddle">
+                    <img src="photos/pi1 (78) (1).JPG" alt="Rugby action 6">
+                </a>
+            </div>
+        </div>
+
+        <!-- Lightbox -->
+        <div class="lightbox" id="lightbox" aria-hidden="true">
+            <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+            <button class="lightbox-prev" id="lightboxPrev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+            <img class="lightbox-image" id="lightboxImage" alt="Expanded photo">
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+            <button class="lightbox-next" id="lightboxNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </section>
+    
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Contact Us</h2>
+                <p>Get in touch with the USRA team</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info" data-aos="fade-right">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>Uganda Schools Rugby Association Secretariat,<br>Lugogo Tennis Club, Lugogo Bypass<br>P.O BOX 22108, <br>Kampala, Uganda</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Chairperson</h4>
+                            <p>+256 783 562 222</p>
+                            <h4>Gen. Secretary</h4>
+                            <p>+256 788 378 660</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>usrasecretariat@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <h4>Office Hours</h4>
+                            <p>Monday - Friday: 8:00 AM - 5:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form" data-aos="fade-left">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="contactName">Name *</label>
+                            <input type="text" id="contactName" name="contactName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Email *</label>
+                            <input type="email" id="contactEmail" name="contactEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactSubject">Subject *</label>
+                            <input type="text" id="contactSubject" name="contactSubject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactMessage">Message *</label>
+                            <textarea id="contactMessage" name="contactMessage" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="photos/usraLogo.png" alt="USRA Logo">
+                        <span>USRA</span>
+                    </div>
+                    <p>Developing the future of rugby in Uganda through school sports excellence.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#chairman">Chairman's Message</a></li>
+                        <li><a href="#registration">Registration</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Tournament Rules</a></li>
+                        <li><a href="#">Training Programs</a></li>
+                        <li><a href="#">Player Guidelines</a></li>
+                        <li><a href="#">News & Updates</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe to our newsletter for updates</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Uganda Schools Rugby Association. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="supabaseClient.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

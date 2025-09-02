@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="status">Testing connection...</div>
+    <div id="user-info"></div>
+    
+    <script src="supabaseClient.js"></script>
+    <script>
+        async function testConnection() {
+            const statusDiv = document.getElementById('status');
+            const userInfoDiv = document.getElementById('user-info');
+            
+            try {
+                // Test basic connection
+                if (!window.USRA.supabase) {
+                    statusDiv.innerHTML = '<span style="color: red;">❌ Supabase client not initialized</span>';
+                    return;
+                }
+                
+                statusDiv.innerHTML = '<span style="color: green;">✅ Supabase client initialized</span>';
+                
+                // Test authentication
+                const { data: { user }, error } = await window.USRA.supabase.auth.getUser();
+                
+                if (error) {
+                    console.error('Auth error:', error);
+                    userInfoDiv.innerHTML = '<p>Auth error: ' + error.message + '</p>';
+                } else if (user) {
+                    userInfoDiv.innerHTML = '<p>✅ User logged in: ' + user.email + '</p>';
+                } else {
+                    userInfoDiv.innerHTML = '<p>ℹ️ No user logged in (this is normal)</p>';
+                }
+                
+                // Test database connection
+                const { data, error: dbError } = await window.USRA.supabase
+                    .from('schools')
+                    .select('count')
+                    .limit(1);
+                
+                if (dbError) {
+                    console.error('Database error:', dbError);
+                    userInfoDiv.innerHTML += '<p style="color: orange;">⚠️ Database error: ' + dbError.message + '</p>';
+                    userInfoDiv.innerHTML += '<p>This might be because the schema hasn\'t been run yet.</p>';
+                } else {
+                    userInfoDiv.innerHTML += '<p style="color: green;">✅ Database connection successful</p>';
+                }
+                
+            } catch (error) {
+                console.error('Test error:', error);
+                statusDiv.innerHTML = '<span style="color: red;">❌ Error: ' + error.message + '</span>';
+            }
+        }
+        
+        // Wait for Supabase to load
+        setTimeout(testConnection, 1000);
+    </script>
+</body>
+</html>

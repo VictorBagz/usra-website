@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>USRA | School Registration</title>
+	<link rel="stylesheet" href="styles.css">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+	<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+	<nav class="navbar">
+		<div class="nav-container">
+			<div class="nav-logo">
+				<img src="photos/usraLogo.png" alt="USRA Logo">
+				<span>USRA</span>
+			</div>
+			<ul class="nav-menu">
+				<li><a href="index.html#home" class="nav-link">Home</a></li>
+				<li><a href="index.html#about" class="nav-link">About</a></li>
+				<li><a href="index.html#chairman" class="nav-link">Chairman</a></li>
+				<li><a href="index.html#statistics" class="nav-link">Statistics</a></li>
+				<li><a href="index.html#gallery" class="nav-link">Gallery</a></li>
+				<li><a href="index.html#contact" class="nav-link">Contact</a></li>
+			</ul>
+			<div class="hamburger">
+				<span class="bar"></span>
+				<span class="bar"></span>
+				<span class="bar"></span>
+			</div>
+		</div>
+	</nav>
+
+	<section class="hero" style="height: 45vh;">
+		<div class="hero-background" style="background-image: url('photos/pi1 (74) (1).JPG');"></div>
+		<div class="hero-overlay"></div>
+		<div class="hero-content">
+			<div class="hero-text" data-aos="fade-up">
+				<h1>School Registration</h1>
+				<p>Join the Uganda Schools Rugby Association</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="registration" style="padding-top: 60px;">
+		<div class="container">
+			<div class="section-header" data-aos="fade-up">
+				<h2>Join USRA</h2>
+				<p>Provide accurate information for verification</p>
+			</div>
+
+			<div class="registration-content">
+				<div class="registration-info" data-aos="fade-right">
+					<div id="authBox" class="auth-box" style="margin-bottom: 1.5rem;">
+						<h3>Administrator Sign In</h3>
+						<form id="authForm">
+							<div class="form-group">
+								<label for="authEmail">Email *</label>
+								<input type="email" id="authEmail" required>
+							</div>
+							<div class="form-group">
+								<label for="authPassword">Password *</label>
+								<input type="password" id="authPassword" required>
+							</div>
+							<div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+								<button type="submit" class="btn btn-primary" id="btnSignIn">Sign In</button>
+								<button type="button" class="btn btn-secondary" id="btnSignUp">Create Account</button>
+								<button type="button" class="btn btn-secondary" id="btnSignOut" style="display:none;">Sign Out</button>
+							</div>
+							<small id="authStatus" style="display:block; margin-top:.5rem;"></small>
+						</form>
+					</div>
+
+					<h3>Registration Guidelines</h3>
+					<ul>
+						<li>Ensure uploaded images are clear (JPG/PNG, max 5MB).</li>
+						<li>Supporting documents may include authorization letters, certificates, etc. (PDF, max 10MB).</li>
+						<li>All fields marked with * are required.</li>
+					</ul>
+				</div>
+
+				<div class="registration-form" data-aos="fade-left">
+					<form id="schoolRegistrationForm" enctype="multipart/form-data">
+						<h3>School Information</h3>
+						<div class="form-group">
+							<label for="schoolName">School Name *</label>
+							<input type="text" id="schoolName" name="schoolName" required>
+						</div>
+						<div class="form-group">
+							<label for="centerNumber">School Centre Number *</label>
+							<input type="text" id="centerNumber" name="centerNumber" required>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="schoolEmail">School Email *</label>
+								<input type="email" id="schoolEmail" name="schoolEmail" required>
+							</div>
+							<div class="form-group">
+								<label for="schoolPhone1">School Contact 1 *</label>
+								<input type="tel" id="schoolPhone1" name="schoolPhone1" required>
+							</div>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="schoolPhone2">School Contact 2</label>
+								<input type="tel" id="schoolPhone2" name="schoolPhone2">
+							</div>
+							<div class="form-group">
+								<label for="address">School Address *</label>
+								<input type="text" id="address" name="address" required>
+							</div>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="region">Region *</label>
+								<select id="region" name="region" required>
+									<option value="">Select region</option>
+									<option>Central</option>
+									<option>Eastern</option>
+									<option>Northern</option>
+									<option>Western</option>
+									<option>West Nile</option>
+									<option>Karamoja</option>
+									<option>South Western</option>
+									<option>Bugisu</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="district">District *</label>
+								<input type="text" id="district" name="district" required>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="schoolBadge">School Badge (PNG/JPG, max 5MB)</label>
+							<input type="file" id="schoolBadge" name="schoolBadge" accept="image/*">
+						</div>
+
+						<h3 style="margin-top:2rem;">Administration Information</h3>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="adminFullName">Full Name *</label>
+								<input type="text" id="adminFullName" name="adminFullName" required>
+							</div>
+							<div class="form-group">
+								<label for="nin">National ID Number (NIN) *</label>
+								<input type="text" id="nin" name="nin" required>
+							</div>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="role">Role *</label>
+								<input type="text" id="role" name="role" required>
+							</div>
+							<div class="form-group">
+								<label for="sex">Sex *</label>
+								<select id="sex" name="sex" required>
+									<option value="">Select</option>
+									<option>Male</option>
+									<option>Female</option>
+								</select>
+							</div>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="qualification">Highest Qualification *</label>
+								<input type="text" id="qualification" name="qualification" required>
+							</div>
+							<div class="form-group">
+								<label for="contact1">Personal Contact 1 *</label>
+								<input type="tel" id="contact1" name="contact1" required>
+							</div>
+						</div>
+						<div class="two-col">
+							<div class="form-group">
+								<label for="contact2">Personal Contact 2</label>
+								<input type="tel" id="contact2" name="contact2">
+							</div>
+							<div class="form-group">
+								<label for="profilePhoto">Profile Photo (PNG/JPG, max 5MB)</label>
+								<input type="file" id="profilePhoto" name="profilePhoto" accept="image/*">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="supportingDocs">Supporting Documents (PDF, max 10MB)</label>
+							<input type="file" id="supportingDocs" name="supportingDocs" accept="application/pdf">
+						</div>
+
+						<button type="submit" class="btn btn-primary">Submit Registration</button>
+						<small style="display:block; margin-top:.5rem;">You must be signed in as an administrator to submit.</small>
+					</form>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<footer class="footer">
+		<div class="container">
+			<div class="footer-content">
+				<div class="footer-section">
+					<div class="footer-logo">
+						<img src="photos/usraLogo.png" alt="USRA Logo">
+						<span>USRA</span>
+					</div>
+					<p>Developing the future of rugby in Uganda through school sports excellence.</p>
+					<div class="social-links">
+						<a href="#"><i class="fab fa-facebook"></i></a>
+						<a href="#"><i class="fab fa-twitter"></i></a>
+						<a href="#"><i class="fab fa-instagram"></i></a>
+						<a href="#"><i class="fab fa-youtube"></i></a>
+					</div>
+				</div>
+				<div class="footer-section">
+					<h4>Quick Links</h4>
+					<ul>
+						<li><a href="index.html#home">Home</a></li>
+						<li><a href="index.html#about">About</a></li>
+						<li><a href="index.html#chairman">Chairman's Message</a></li>
+						<li><a href="registration.html">Registration</a></li>
+					</ul>
+				</div>
+				<div class="footer-section">
+					<h4>Resources</h4>
+					<ul>
+						<li><a href="#">Tournament Rules</a></li>
+						<li><a href="#">Training Programs</a></li>
+						<li><a href="#">Player Guidelines</a></li>
+						<li><a href="#">News & Updates</a></li>
+					</ul>
+				</div>
+				<div class="footer-section">
+					<h4>Newsletter</h4>
+					<p>Subscribe to our newsletter for updates</p>
+					<form class="newsletter-form">
+						<input type="email" placeholder="Enter your email">
+						<button type="submit" class="btn btn-primary">Subscribe</button>
+					</form>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<p>&copy; 2024 Uganda Schools Rugby Association. All rights reserved.</p>
+			</div>
+		</div>
+	</footer>
+
+	<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+	<script src="supabaseClient.js"></script>
+	<script src="script.js"></script>
+	<script>
+		// guard homepage-only listeners
+		(function(){
+			const homeForm = document.getElementById('registrationForm');
+			if (!homeForm) return;
+		})();
+	</script>
+</body>
+</html>
+
