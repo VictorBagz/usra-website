@@ -799,6 +799,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize download tracking
     initDownloadTracking();
     
+    // Initialize hero animations
+    initHeroAnimations();
+    
     // Add retry functionality to failed requests
     window.retryFailedRequest = function(requestFn, maxRetries = 3) {
         return new Promise((resolve, reject) => {
@@ -856,7 +859,102 @@ function initDownloadTracking() {
     });
 }
 
-// 11. Expose utilities globally for use in other scripts
+// 11. Hero animations and effects
+function initHeroAnimations() {
+    const heroBackground = document.querySelector('.hero-background');
+    const heroContent = document.querySelector('.hero-content');
+    
+    if (!heroBackground || !heroContent) return;
+    
+    // Parallax scroll effect
+    let ticking = false;
+    function updateHeroParallax() {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+        const opacity = Math.max(0, 1 - scrolled / window.innerHeight);
+        
+        if (heroBackground) {
+            heroBackground.style.transform = `
+                scale(1.1) 
+                translateX(-5%) 
+                translateY(calc(-5% + ${rate}px))
+            `;
+            heroBackground.style.opacity = opacity;
+        }
+        
+        if (heroContent) {
+            heroContent.style.transform = `translateY(${rate * 0.3}px)`;
+            heroContent.style.opacity = opacity;
+        }
+        
+        ticking = false;
+    }
+    
+    function requestHeroTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateHeroParallax);
+            ticking = true;
+        }
+    }
+    
+    // Mouse movement parallax effect
+    function handleMouseMove(e) {
+        if (window.innerWidth < 768) return; // Disable on mobile
+        
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        
+        const xPercent = (clientX / innerWidth) * 100;
+        const yPercent = (clientY / innerHeight) * 100;
+        
+        const moveX = (xPercent - 50) * 0.1;
+        const moveY = (yPercent - 50) * 0.1;
+        
+        if (heroBackground && window.pageYOffset < window.innerHeight) {
+            heroBackground.style.transform = `
+                scale(1.1) 
+                translateX(calc(-5% + ${moveX}px)) 
+                translateY(calc(-5% + ${moveY}px))
+            `;
+        }
+    }
+    
+    // Intersection Observer for hero visibility
+    const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                heroBackground.style.animationPlayState = 'running';
+                document.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('scroll', requestHeroTick, { passive: true });
+            } else {
+                heroBackground.style.animationPlayState = 'paused';
+                document.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('scroll', requestHeroTick);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    heroObserver.observe(document.querySelector('.hero'));
+    
+    // Performance optimization: pause animations when tab is not visible
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            heroBackground.style.animationPlayState = 'paused';
+        } else {
+            heroBackground.style.animationPlayState = 'running';
+        }
+    });
+    
+    // Add resize handler to recalculate positions
+    window.addEventListener('resize', debounce(() => {
+        // Reset transform on resize
+        if (heroBackground) {
+            heroBackground.style.transform = 'scale(1.1) translateX(-5%) translateY(-5%)';
+        }
+    }, 250));
+}
+
+// 12. Expose utilities globally for use in other scripts
 window.USRAUtils = {
     showLoading,
     hideLoading,
@@ -867,7 +965,8 @@ window.USRAUtils = {
     measurePerformance,
     debounce,
     retryFailedRequest: window.retryFailedRequest,
-    initDownloadTracking
+    initDownloadTracking,
+    initHeroAnimations
 };
 
 // Gallery Lightbox
