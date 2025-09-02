@@ -901,6 +901,28 @@ p {
     color: var(--secondary-yellow);
 }
 
+/* Download links styling */
+.footer-section ul li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.footer-section ul li a:hover {
+    background: rgba(251, 191, 36, 0.1);
+    padding-left: 8px;
+    transform: translateX(4px);
+}
+
+.footer-section ul li a i {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
 .newsletter-form {
     display: flex;
     gap: 1rem;

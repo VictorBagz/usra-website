@@ -796,6 +796,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize auto-save
     initAutoSave();
     
+    // Initialize download tracking
+    initDownloadTracking();
+    
     // Add retry functionality to failed requests
     window.retryFailedRequest = function(requestFn, maxRetries = 3) {
         return new Promise((resolve, reject) => {
@@ -822,7 +825,38 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 
-// 10. Expose utilities globally for use in other scripts
+// 10. Download tracking and user feedback
+function initDownloadTracking() {
+    const downloadLinks = document.querySelectorAll('a[download]');
+    downloadLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const fileName = this.getAttribute('download');
+            const fileType = fileName.split('.').pop().toUpperCase();
+            
+            // Show download notification
+            showNotification(`Downloading ${fileType} file: ${fileName}`, 'info', 3000);
+            
+            // Track download in console for analytics
+            console.log(`Download initiated: ${fileName} from ${this.href}`);
+            
+            // Optional: Send download tracking to analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'download', {
+                    'file_name': fileName,
+                    'file_type': fileType
+                });
+            }
+        });
+        
+        // Add download indicator on hover
+        link.addEventListener('mouseenter', function() {
+            const fileName = this.getAttribute('download');
+            this.setAttribute('title', `Download ${fileName}`);
+        });
+    });
+}
+
+// 11. Expose utilities globally for use in other scripts
 window.USRAUtils = {
     showLoading,
     hideLoading,
@@ -832,7 +866,8 @@ window.USRAUtils = {
     clearAutoSave,
     measurePerformance,
     debounce,
-    retryFailedRequest: window.retryFailedRequest
+    retryFailedRequest: window.retryFailedRequest,
+    initDownloadTracking
 };
 
 // Gallery Lightbox
