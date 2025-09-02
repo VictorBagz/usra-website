@@ -88,6 +88,30 @@ if (window.USRA && window.USRA.supabase) {
 
 refreshAuthVisibility();
 
+// Conditionally show Dashboard link for chair/admin users
+(async function showDashboardForAdmins(){
+    try {
+        if (!window.USRA || !USRA.supabase) return;
+        const navDash = document.getElementById('navDashboard');
+        if (!navDash) return;
+        const { data: { user } } = await USRA.supabase.auth.getUser();
+        if (!user) { navDash.style.display = 'none'; return; }
+        const { data: rows } = await USRA.supabase
+            .from('members')
+            .select('role')
+            .eq('user_id', user.id)
+            .limit(1);
+        const role = String(rows?.[0]?.role || '').toLowerCase();
+        if (role.startsWith('chair') || role.includes('admin')) {
+            navDash.style.display = 'list-item';
+        } else {
+            navDash.style.display = 'none';
+        }
+    } catch (e) {
+        console.warn('Dashboard role check failed:', e);
+    }
+})();
+
 // Mobile Navigation Toggle
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
