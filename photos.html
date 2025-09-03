@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Collections - Uganda Schools Rugby Association (USRA)</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="photos/usraLogo.png" as="image">
+    
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Non-critical CSS - load asynchronously -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+    
+    <!-- Scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="photos/usraLogo.png" alt="USRA Logo">
+                <span>USRA</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html#home" class="nav-link">Home</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li class="nav-more">
+                    <a href="#" class="nav-link">More <i class="fas fa-chevron-down" style="font-size:.8rem;"></i></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="workplan.html">Workplan 2025</a></li>
+                    </ul>
+                </li>
+                <li><a href="index.html#gallery" class="nav-link">Gallery</a></li>
+                <li><a href="registration.html" class="nav-link">Registration</a></li>
+                <li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Photos Hero Section -->
+    <section class="photos-hero">
+        <div class="container">
+            <div class="photos-hero-content" data-aos="fade-up">
+                <h1>Photo Collections</h1>
+                <p>Explore our complete collection of USRA rugby photos from tournaments, training sessions, ceremonies, and team events.</p>
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> <i class="fas fa-chevron-right"></i> <span>Photos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Collections Grid -->
+    <section class="photos-collections">
+        <div class="container">
+            <div class="photos-collections-grid">
+                
+                <!-- Tournament Photos -->
+                <div class="photo-collection-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="photo-collection-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="photo-collection-content">
+                        <h3>Tournament 2024</h3>
+                        <p>Inter-school championship matches, finals, and trophy ceremonies. Witness the intensity and passion of school rugby competition.</p>
+                        <div class="photo-collection-meta">
+                            <span class="photo-count"><i class="fas fa-images"></i> 150+ Photos</span>
+                            <span class="photo-date"><i class="fas fa-calendar"></i> December 2024</span>
+                        </div>
+                    </div>
+                    <div class="photo-collection-actions">
+                        <a href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fab fa-google"></i> View on Google Photos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Training Sessions -->
+                <div class="photo-collection-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="photo-collection-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <div class="photo-collection-content">
+                        <h3>Training Sessions</h3>
+                        <p>Behind-the-scenes training sessions, skill development, and team preparation. See how our athletes develop their rugby skills.</p>
+                        <div class="photo-collection-meta">
+                            <span class="photo-count"><i class="fas fa-images"></i> 80+ Photos</span>
+                            <span class="photo-date"><i class="fas fa-calendar"></i> November 2024</span>
+                        </div>
+                    </div>
+                    <div class="photo-collection-actions">
+                        <a href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fab fa-google"></i> View on Google Photos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Award Ceremonies -->
+                <div class="photo-collection-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="photo-collection-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="photo-collection-content">
+                        <h3>Award Ceremonies</h3>
+                        <p>Prize giving ceremonies, recognition events, and celebration of achievements. Honoring excellence in school rugby.</p>
+                        <div class="photo-collection-meta">
+                            <span class="photo-count"><i class="fas fa-images"></i> 60+ Photos</span>
+                            <span class="photo-date"><i class="fas fa-calendar"></i> December 2024</span>
+                        </div>
+                    </div>
+                    <div class="photo-collection-actions">
+                        <a href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fab fa-google"></i> View on Google Photos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Team Events -->
+                <div class="photo-collection-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="photo-collection-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="photo-collection-content">
+                        <h3>Team Events</h3>
+                        <p>Social events, team building activities, and community outreach programs. Building bonds beyond the rugby field.</p>
+                        <div class="photo-collection-meta">
+                            <span class="photo-count"><i class="fas fa-images"></i> 120+ Photos</span>
+                            <span class="photo-date"><i class="fas fa-calendar"></i> October 2024</span>
+                        </div>
+                    </div>
+                    <div class="photo-collection-actions">
+                        <a href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fab fa-google"></i> View on Google Photos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- School Visits -->
+                <div class="photo-collection-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="photo-collection-icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <div class="photo-collection-content">
+                        <h3>School Visits</h3>
+                        <p>USRA officials visiting member schools, coaching clinics, and rugby development programs across Uganda.</p>
+                        <div class="photo-collection-meta">
+                            <span class="photo-count"><i class="fas fa-images"></i> 90+ Photos</span>
+                            <span class="photo-date"><i class="fas fa-calendar"></i> September 2024</span>
+                        </div>
+                    </div>
+                    <div class="photo-collection-actions">
+                        <a href="#" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fab fa-google"></i> View on Google Photos
+                        </a>
+                    </div>
+                </div>
+
+            <!-- Back to Gallery -->
+            <div class="back-to-gallery" data-aos="fade-up" data-aos-delay="700">
+                <a href="index.html#gallery" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Main Gallery
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
+                        <span>USRA</span>
+                    </div>
+                    <p>Developing the future of rugby in Uganda through school sports excellence.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="@USRA_Official1"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                        <li><a href="index.html#chairman">Chairman's Message</a></li>
+                        <li><a href="registration.html">Registration</a></li>
+                        <li><a href="https://athletesmedicalfund.com/">Athletes Medical Fund</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Downloads</h4>
+                    <ul>
+                        <li><a href="photos/2025 USRA COMPETITIONS MANUAL FINAL.pdf" download="USRA-Tournament-Manual-2025.pdf" target="_blank">
+                            <i class="fas fa-download"></i> Tournament Manual</a></li>
+                        <li><a href="assets/docs/school-registration-form.pdf" download="USRA-School-Registration-Form.pdf" target="_blank">
+                            <i class="fas fa-download"></i> Registration Form</a></li>
+                        <li><a href="photos/USRA ACCOUNTABILITY FORM.pdf" download="USRA-Accountability-Form.pdf" target="_blank">
+                            <i class="fas fa-download"></i> Accountability Form</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe to our newsletter for updates</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Uganda Schools Rugby Association. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load scripts asynchronously for better performance -->
+    <script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="supabaseClient.js"></script>
+    <script defer src="script.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ AOS.init({
     mirror: false
 });
 
-// Auth UI wiring
+// Auth UI wiring - safely get elements
 const authBox = document.getElementById('authBox');
 const btnSignIn = document.getElementById('btnSignIn');
 const btnSignUp = document.getElementById('btnSignUp');
@@ -39,8 +39,12 @@ async function refreshAuthVisibility() {
 if (authForm && window.USRA && window.USRA.supabase) {
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
+        const emailEl = document.getElementById('authEmail');
+        const passwordEl = document.getElementById('authPassword');
+        if (!emailEl || !passwordEl) return;
+        
+        const email = emailEl.value.trim();
+        const password = passwordEl.value;
         btnSignIn.disabled = true;
         btnSignIn.innerHTML = '<span class="loading"></span> Signing in...';
         const { error } = await USRA.signInWithEmail(email, password);
@@ -57,8 +61,12 @@ if (authForm && window.USRA && window.USRA.supabase) {
     });
 
     btnSignUp.addEventListener('click', async () => {
-        const email = document.getElementById('authEmail').value.trim();
-        const password = document.getElementById('authPassword').value;
+        const emailEl = document.getElementById('authEmail');
+        const passwordEl = document.getElementById('authPassword');
+        if (!emailEl || !passwordEl) return;
+        
+        const email = emailEl.value.trim();
+        const password = passwordEl.value;
         btnSignUp.disabled = true;
         btnSignUp.innerHTML = '<span class="loading"></span> Creating...';
         const { error } = await USRA.signUpWithEmail(email, password);
@@ -116,10 +124,12 @@ refreshAuthVisibility();
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
 
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
-});
+if (hamburger && navMenu) {
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+}
 
 // Mobile dropdown toggle
 const navMore = document.querySelector('.nav-more');
@@ -134,10 +144,12 @@ if (navMore) {
 }
 
 // Close mobile menu when clicking on a link
-document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-    hamburger.classList.remove('active');
-    navMenu.classList.remove('active');
-}));
+if (hamburger && navMenu) {
+    document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+    }));
+}
 
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -153,15 +165,24 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Navbar background change on scroll
-window.addEventListener('scroll', () => {
+// Optimized navbar background change on scroll
+let navbarTicking = false;
+function updateNavbar() {
     const navbar = document.querySelector('.navbar');
     if (window.scrollY > 100) {
         navbar.style.background = 'rgba(0, 0, 0, 0.95)';
     } else {
         navbar.style.background = 'rgba(0, 0, 0, 0.9)';
     }
-});
+    navbarTicking = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!navbarTicking) {
+        requestAnimationFrame(updateNavbar);
+        navbarTicking = true;
+    }
+}, { passive: true });
 
 // Counter Animation for Statistics
 function animateCounter(element, target, duration = 2000) {
@@ -359,7 +380,8 @@ if (schoolRegistrationForm && window.USRA && USRA.supabase) {
     });
 }
 
-document.getElementById('contactForm').addEventListener('submit', async function(e) {
+const contactForm = document.getElementById('contactForm');
+if (contactForm) contactForm.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -391,7 +413,8 @@ document.getElementById('contactForm').addEventListener('submit', async function
 });
 
 // Newsletter form
-document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
+const newsletterForm = document.querySelector('.newsletter-form');
+if (newsletterForm) newsletterForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const email = this.querySelector('input[type="email"]').value;
@@ -404,14 +427,23 @@ document.querySelector('.newsletter-form').addEventListener('submit', function(e
 // Legacy notification function - replaced by enhanced version above
 // This is kept for backwards compatibility but redirects to the new function
 
-// Parallax effect for hero section
-window.addEventListener('scroll', () => {
+// Optimized parallax effect for hero section
+let parallaxTicking = false;
+function updateParallax() {
     const scrolled = window.pageYOffset;
     const heroBackground = document.querySelector('.hero-background');
-    if (heroBackground) {
-        heroBackground.style.transform = `translateY(${scrolled * 0.5}px)`;
+    if (heroBackground && scrolled < window.innerHeight) {
+        heroBackground.style.transform = `translateY(${scrolled * 0.3}px)`;
     }
-});
+    parallaxTicking = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!parallaxTicking) {
+        requestAnimationFrame(updateParallax);
+        parallaxTicking = true;
+    }
+}, { passive: true });
 
 // Add loading animation styles
 const style = document.createElement('style');
@@ -458,7 +490,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Add scroll reveal animations for elements not using AOS
+// Optimized scroll reveal animations
 const scrollRevealElements = document.querySelectorAll('.feature, .contact-item, .footer-section');
 
 const scrollRevealObserver = new IntersectionObserver((entries) => {
@@ -466,17 +498,21 @@ const scrollRevealObserver = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translateY(0)';
+            // Stop observing once revealed for better performance
+            scrollRevealObserver.unobserve(entry.target);
         }
     });
 }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    threshold: 0.2,
+    rootMargin: '0px 0px -30px 0px'
 });
 
+// Use will-change for better performance
 scrollRevealElements.forEach(element => {
     element.style.opacity = '0';
-    element.style.transform = 'translateY(30px)';
-    element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    element.style.transform = 'translateY(20px)';
+    element.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    element.style.willChange = 'opacity, transform';
     scrollRevealObserver.observe(element);
 });
 
@@ -539,44 +575,34 @@ function hideLoading(element, originalContent = null) {
     element.disabled = false;
 }
 
-// 2. Global error boundary for better UX
+// 2. Global error boundary for better UX - only for critical errors
 window.addEventListener('error', (e) => {
     console.error('Global error:', e.error || e);
-    showNotification('Something went wrong. Please try again.', 'error');
+    
+    // Only show notification for critical errors, not missing elements
+    const errorMessage = e.error?.message || e.message || '';
+    const isCriticalError = errorMessage.includes('Network') || 
+                           errorMessage.includes('Failed to fetch') ||
+                           errorMessage.includes('TypeError') && !errorMessage.includes('null');
+    
+    if (isCriticalError) {
+        showNotification('Something went wrong. Please try again.', 'error');
+    }
 });
 
 window.addEventListener('unhandledrejection', (e) => {
     console.error('Unhandled promise rejection:', e.reason);
-    showNotification('An unexpected error occurred. Please refresh the page.', 'error');
+    
+    // Only show notification for network/fetch related rejections
+    const reason = e.reason?.message || e.reason || '';
+    if (reason.includes('fetch') || reason.includes('network') || reason.includes('CORS')) {
+        showNotification('An unexpected error occurred. Please refresh the page.', 'error');
+    }
     e.preventDefault(); // Prevent the default console error
 });
 
-// 3. Network status detection and user feedback
-let isOnline = navigator.onLine;
 
-function updateNetworkStatus() {
-    const networkIndicator = document.getElementById('networkStatus');
-    if (networkIndicator) {
-        networkIndicator.className = isOnline ? 'network-online' : 'network-offline';
-        networkIndicator.innerHTML = isOnline 
-            ? '<i class="fas fa-wifi"></i> Online' 
-            : '<i class="fas fa-wifi-slash"></i> Offline';
-    }
-}
-
-window.addEventListener('online', () => {
-    isOnline = true;
-    updateNetworkStatus();
-    showNotification('Connection restored! You\'re back online.', 'success');
-});
-
-window.addEventListener('offline', () => {
-    isOnline = false;
-    updateNetworkStatus();
-    showNotification('You\'re offline. Some features may not work.', 'warning');
-});
-
-// 4. Auto-save functionality for forms
+// 3. Auto-save functionality for forms
 function autoSave(formData, key, expiryMinutes = 30) {
     try {
         const data = {
@@ -615,7 +641,7 @@ function clearAutoSave(key) {
     }
 }
 
-// 5. Enhanced notification system with different types
+// 4. Enhanced notification system with different types
 function showNotification(message, type = 'info', duration = 5000) {
     // Remove existing notifications of the same type
     const existing = document.querySelectorAll(`.notification-${type}`);
@@ -698,7 +724,7 @@ function showNotification(message, type = 'info', duration = 5000) {
     return notification;
 }
 
-// 6. Performance monitoring and optimization
+// 5. Performance monitoring and optimization
 function measurePerformance(name, fn) {
     return async function(...args) {
         const start = performance.now();
@@ -812,10 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 requestFn()
                     .then(resolve)
                     .catch(error => {
-                        if (attempts < maxRetries && !isOnline) {
-                            showNotification(`Attempt ${attempts} failed. Retrying when online...`, 'warning');
-                            window.addEventListener('online', attempt, { once: true });
-                        } else if (attempts < maxRetries) {
+                        if (attempts < maxRetries) {
                             setTimeout(attempt, 1000 * attempts); // Exponential backoff
                         } else {
                             reject(error);
@@ -828,7 +851,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 });
 
-// 10. Download tracking and user feedback
+// 6. Download tracking and user feedback
 function initDownloadTracking() {
     const downloadLinks = document.querySelectorAll('a[download]');
     downloadLinks.forEach(link => {
@@ -954,7 +977,7 @@ function initHeroAnimations() {
     }, 250));
 }
 
-// 12. Expose utilities globally for use in other scripts
+// 8. Expose utilities globally for use in other scripts
 window.USRAUtils = {
     showLoading,
     hideLoading,

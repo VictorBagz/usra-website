@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uganda Schools Rugby Association (USRA)</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="photos/usraLogo.png" as="image">
+    
+    <!-- Critical CSS -->
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Non-critical CSS - load asynchronously -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+    
+    <!-- Scripts -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -116,7 +129,7 @@
                     </ol>
                 </div>
                 <div class="about-image about-card" data-aos="fade-left" data-aos-delay="250">
-                    <img src="photos/pi1 (74) (1).JPG" alt="Rugby Team">
+                    <img src="photos/pi1 (74) (1).JPG" alt="Rugby Team" loading="lazy">
                 </div>
             </div>
         </div>
@@ -127,7 +140,7 @@
         <div class="container">
             <div class="chairman-content" data-aos="fade-up">
                 <div class="chairman-image">
-                    <img src="photos/dixon.jpg" alt="Chairman">
+                    <img src="photos/dixon.jpg" alt="Chairman" loading="lazy">
                 </div>
                 <div class="chairman-message">
                     <h2>Chairman's Message</h2>
@@ -215,9 +228,9 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
                 </div>
                 <div class="mf-visual" data-aos="zoom-in" data-aos-delay="100">
                     <div class="mf-card">
-                        <img src="photos/medicalfund (1).jpeg" alt="Athletes Medical Fund">
+                        <img src="photos/medicalfund (1).jpeg" alt="Athletes Medical Fund" loading="lazy">
                         <div class="mf-logo">
-                            <img src="photos/medicalfundLogo.jpeg" alt="Fund Logo">
+                            <img src="photos/medicalfundLogo.jpeg" alt="Fund Logo" loading="lazy">
                         </div>
                     </div>
                 </div>
@@ -235,23 +248,94 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
             <div class="gallery-grid">
                 <!-- Replace src with assets/images files when available -->
                 <a href="photos/pi1 (24) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Line-out leap">
-                    <img src="photos/pi1 (24) (1).jpg" alt="Rugby action 1">
+                    <img src="photos/pi1 (24) (1).jpg" alt="Rugby action 1" loading="lazy">
                 </a>
                 <a href="photos/pi1 (10) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Tackle and drive">
-                    <img src="photos/pi1 (10) (1).jpg" alt="Rugby action 2">
+                    <img src="photos/pi1 (10) (1).jpg" alt="Rugby action 2" loading="lazy">
                 </a>
                 <a href="photos/pi1 (63) (1).JPG" class="gallery-item" data-aos="zoom-in" data-title="Team scrum">
-                    <img src="photos/pi1 (63) (1).JPG" alt="Rugby action 3">
+                    <img src="photos/pi1 (63) (1).JPG" alt="Rugby action 3" loading="lazy">
                 </a>
                 <a href="photos/pi1 (46) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Sprint to the line">
-                    <img src="photos/pi1 (46) (1).jpg" alt="Rugby action 4">
+                    <img src="photos/pi1 (46) (1).jpg" alt="Rugby action 4" loading="lazy">
                 </a>
                 <a href="photos/pi1 (43) (1).jpg" class="gallery-item" data-aos="zoom-in" data-title="Kickoff focus">
-                    <img src="photos/pi1 (43) (1).jpg" alt="Rugby action 5">
+                    <img src="photos/pi1 (43) (1).jpg" alt="Rugby action 5" loading="lazy">
                 </a>
                 <a href="photos/pi1 (78) (1).JPG" class="gallery-item" data-aos="zoom-in" data-title="Victory huddle">
-                    <img src="photos/pi1 (78) (1).JPG" alt="Rugby action 6">
+                    <img src="photos/pi1 (78) (1).JPG" alt="Rugby action 6" loading="lazy">
                 </a>
+            </div>
+            
+            <!-- Google Photos Links Section -->
+            <div class="google-photos-section" data-aos="fade-up" data-aos-delay="200">
+                <div class="photos-header">
+                    <h3>View More Photos</h3>
+                    <p>Explore our complete photo collections on Google Photos</p>
+                </div>
+                
+                <div class="photos-links-grid">
+                    <a href="https://drive.google.com/drive/folders/14dXQZ-8ItZ1XY8RAvFWnEhmKZTZvdb9V" class="photo-link-card" target="_blank" rel="noopener">
+                        <div class="photo-link-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="photo-link-content">
+                            <h4>2025 School's League Finals</h4>
+                            <span class="photo-count">150+ Photos</span>
+                        </div>
+                        <div class="photo-link-arrow">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="https://drive.google.com/drive/folders/1-mJKC3wcCCNFucFP1Xu7WV8urjIkgLvd" class="photo-link-card" target="_blank" rel="noopener">
+                        <div class="photo-link-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="photo-link-content">
+                            <h4>2nd Leg Semi Finals 2025</h4>
+                            <p>Behind-the-scenes training and team preparation</p>
+                            <span class="photo-count">80+ Photos</span>
+                        </div>
+                        <div class="photo-link-arrow">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="https://drive.google.com/drive/folders/1-ncPUCNxE-ZPBz8Z9ZzzCNuToQxJfQMJ" class="photo-link-card" target="_blank" rel="noopener">
+                        <div class="photo-link-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="photo-link-content">
+                            <h4>Division II Finals 2025</h4>
+                            <span class="photo-count">60+ Photos</span>
+                        </div>
+                        <div class="photo-link-arrow">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                    
+                    <a href="https://drive.google.com/drive/folders/1h5A2eBEkq7HibZuAs8y1FhcC8NFFDvzh" class="photo-link-card" target="_blank" rel="noopener">
+                        <div class="photo-link-icon">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <div class="photo-link-content">
+                            <h4>Northern Schools Finals 2025</h4>
+                            <span class="photo-count">120+ Photos</span>
+                        </div>
+                        <div class="photo-link-arrow">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- See More Link -->
+                <div class="photos-see-more" data-aos="fade-up" data-aos-delay="300">
+                    <a href="photos.html" class="btn btn-secondary photos-more-btn">
+                        <i class="fas fa-images"></i>
+                        See All Photo Collections
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -337,7 +421,7 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <img src="photos/usraLogo.png" alt="USRA Logo">
+                        <img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
                         <span>USRA</span>
                     </div>
                     <p>Developing the future of rugby in Uganda through school sports excellence.</p>
@@ -361,14 +445,12 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
                 <div class="footer-section">
                     <h4>Downloads</h4>
                     <ul>
-                        <li><a href="assets/docs/tournament-manual-2025.pdf" download="USRA-Tournament-Manual-2025.pdf" target="_blank">
+                        <li><a href="photos/2025 USRA COMPETITIONS MANUAL FINAL.pdf" download="USRA-Tournament-Manual-2025.pdf" target="_blank">
                             <i class="fas fa-download"></i> Tournament Manual</a></li>
                         <li><a href="assets/docs/school-registration-form.pdf" download="USRA-School-Registration-Form.pdf" target="_blank">
                             <i class="fas fa-download"></i> Registration Form</a></li>
-                        <li><a href="assets/docs/accountability-form.pdf" download="USRA-Accountability-Form.pdf" target="_blank">
+                        <li><a href="photos/USRA ACCOUNTABILITY FORM.pdf" download="USRA-Accountability-Form.pdf" target="_blank">
                             <i class="fas fa-download"></i> Accountability Form</a></li>
-                        <li><a href="assets/docs/administrator-file.pdf" download="USRA-Administrator-File.pdf" target="_blank">
-                            <i class="fas fa-download"></i> Administrator File</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -386,8 +468,9 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
         </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="supabaseClient.js"></script>
-    <script src="script.js"></script>
+    <!-- Load scripts asynchronously for better performance -->
+    <script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="supabaseClient.js"></script>
+    <script defer src="script.js"></script>
 </body>
 </html>
