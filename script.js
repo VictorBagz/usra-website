@@ -17,15 +17,15 @@ const authStatus = document.getElementById('authStatus');
 function setAuthUI(state) {
     if (!authBox) return;
     if (state === 'signed-in') {
-        btnSignIn.style.display = 'none';
-        btnSignUp.style.display = 'none';
-        btnSignOut.style.display = 'inline-block';
-        authStatus.textContent = 'Signed in';
+        if (btnSignIn) btnSignIn.style.display = 'none';
+        if (btnSignUp) btnSignUp.style.display = 'none';
+        if (btnSignOut) btnSignOut.style.display = 'inline-block';
+        if (authStatus) authStatus.textContent = 'Signed in';
     } else {
-        btnSignIn.style.display = 'inline-block';
-        btnSignUp.style.display = 'inline-block';
-        btnSignOut.style.display = 'none';
-        authStatus.textContent = '';
+        if (btnSignIn) btnSignIn.style.display = 'inline-block';
+        if (btnSignUp) btnSignUp.style.display = 'inline-block';
+        if (btnSignOut) btnSignOut.style.display = 'none';
+        if (authStatus) authStatus.textContent = '';
     }
 }
 
@@ -45,46 +45,62 @@ if (authForm && window.USRA && window.USRA.supabase) {
         
         const email = emailEl.value.trim();
         const password = passwordEl.value;
+        if (btnSignIn) {
         btnSignIn.disabled = true;
         btnSignIn.innerHTML = '<span class="loading"></span> Signing in...';
+        }
         const { error } = await USRA.signInWithEmail(email, password);
+        if (btnSignIn) {
         btnSignIn.disabled = false;
         btnSignIn.textContent = 'Sign In';
+        }
         if (error) {
+            if (authStatus) {
             authStatus.textContent = error.message;
             authStatus.style.color = '#FF0000';
+            }
         } else {
+            if (authStatus) {
             authStatus.textContent = 'Signed in successfully';
             authStatus.style.color = '#4CAF50';
+            }
             setAuthUI('signed-in');
         }
     });
 
+    if (btnSignUp) {
     btnSignUp.addEventListener('click', async () => {
-        const emailEl = document.getElementById('authEmail');
-        const passwordEl = document.getElementById('authPassword');
-        if (!emailEl || !passwordEl) return;
-        
-        const email = emailEl.value.trim();
-        const password = passwordEl.value;
+            const emailEl = document.getElementById('authEmail');
+            const passwordEl = document.getElementById('authPassword');
+            if (!emailEl || !passwordEl) return;
+            
+            const email = emailEl.value.trim();
+            const password = passwordEl.value;
         btnSignUp.disabled = true;
         btnSignUp.innerHTML = '<span class="loading"></span> Creating...';
         const { error } = await USRA.signUpWithEmail(email, password);
         btnSignUp.disabled = false;
         btnSignUp.textContent = 'Create Account';
         if (error) {
+                if (authStatus) {
             authStatus.textContent = error.message;
             authStatus.style.color = '#FF0000';
+                }
         } else {
+                if (authStatus) {
             authStatus.textContent = 'Account created. Check your email to confirm.';
             authStatus.style.color = '#4CAF50';
+                }
         }
     });
+    }
 
+    if (btnSignOut) {
     btnSignOut.addEventListener('click', async () => {
         await USRA.signOut();
         setAuthUI('signed-out');
     });
+    }
 }
 
 // Listen to auth state changes
@@ -125,10 +141,10 @@ const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
 
 if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
 }
 
 // Mobile dropdown toggle
@@ -145,10 +161,10 @@ if (navMore) {
 
 // Close mobile menu when clicking on a link
 if (hamburger && navMenu) {
-    document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-    }));
+document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+}));
 }
 
 // Smooth scrolling for navigation links
@@ -169,10 +185,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 let navbarTicking = false;
 function updateNavbar() {
     const navbar = document.querySelector('.navbar');
+    if (navbar) {
     if (window.scrollY > 100) {
         navbar.style.background = 'rgba(0, 0, 0, 0.95)';
     } else {
         navbar.style.background = 'rgba(0, 0, 0, 0.9)';
+    }
     }
     navbarTicking = false;
 }
@@ -579,24 +597,44 @@ function hideLoading(element, originalContent = null) {
 window.addEventListener('error', (e) => {
     console.error('Global error:', e.error || e);
     
-    // Only show notification for critical errors, not missing elements
+    // Only show notification for very specific critical errors
     const errorMessage = e.error?.message || e.message || '';
-    const isCriticalError = errorMessage.includes('Network') || 
-                           errorMessage.includes('Failed to fetch') ||
-                           errorMessage.includes('TypeError') && !errorMessage.includes('null');
+    const filename = e.filename || '';
+    
+    // Skip errors that are common and not user-actionable
+    const shouldSkip = errorMessage.includes('Cannot read propert') ||
+                       errorMessage.includes('null') ||
+                       errorMessage.includes('undefined') ||
+                       errorMessage.includes('Script error') ||
+                       filename.includes('extension') ||
+                       filename.includes('chrome-extension') ||
+                       errorMessage.includes('ResizeObserver') ||
+                       errorMessage.includes('Non-Error promise rejection');
+    
+    // Only show for severe network/fetch errors that users can act on
+    const isCriticalError = !shouldSkip && (
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('NetworkError') ||
+        errorMessage.includes('ERR_INTERNET_DISCONNECTED')
+    );
     
     if (isCriticalError) {
-        showNotification('Something went wrong. Please try again.', 'error');
+        showNotification('Network connection issue. Please check your internet connection.', 'error');
     }
 });
 
 window.addEventListener('unhandledrejection', (e) => {
     console.error('Unhandled promise rejection:', e.reason);
     
-    // Only show notification for network/fetch related rejections
+    // Only show notification for specific network/fetch related rejections that users can act on
     const reason = e.reason?.message || e.reason || '';
-    if (reason.includes('fetch') || reason.includes('network') || reason.includes('CORS')) {
-        showNotification('An unexpected error occurred. Please refresh the page.', 'error');
+    const shouldShow = reason.includes('Failed to fetch') ||
+                       reason.includes('NetworkError') ||
+                       reason.includes('ERR_INTERNET_DISCONNECTED') ||
+                       (reason.includes('CORS') && !reason.includes('chrome-extension'));
+    
+    if (shouldShow) {
+        showNotification('Connection error. Please refresh the page and try again.', 'error');
     }
     e.preventDefault(); // Prevent the default console error
 });

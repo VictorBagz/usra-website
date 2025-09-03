@@ -3,26 +3,47 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>USRA | School Registration</title>
+	<title>School Registration - Uganda Schools Rugby Association (USRA)</title>
+	<!-- Preload critical resources -->
+	<link rel="preload" href="styles.css" as="style">
+	<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+	<link rel="preload" href="photos/usraLogo.png" as="image">
+	
+	<!-- Critical CSS -->
 	<link rel="stylesheet" href="styles.css">
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	
+	<!-- Non-critical CSS - load asynchronously -->
+	<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+	
+	<link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+	
+	<!-- Scripts -->
 	<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+	<!-- Navigation -->
 	<nav class="navbar">
 		<div class="nav-container">
 			<div class="nav-logo">
 				<img src="photos/usraLogo.png" alt="USRA Logo">
-				<span>USRA</span>
+				<span>Uganda Schools' Rugby Association</span>
 			</div>
 			<ul class="nav-menu">
 				<li><a href="index.html#home" class="nav-link">Home</a></li>
 				<li><a href="index.html#about" class="nav-link">About</a></li>
-				<li><a href="index.html#chairman" class="nav-link">Chairman</a></li>
-				<li><a href="index.html#statistics" class="nav-link">Statistics</a></li>
+				<li class="nav-more">
+					<a href="#" class="nav-link">More <i class="fas fa-chevron-down" style="font-size:.8rem;"></i></a>
+					<ul class="dropdown-menu">
+						<li><a href="leadership.html">Leadership</a></li>
+						<li><a href="workplan.html">Workplan 2025</a></li>
+					</ul>
+				</li>
 				<li><a href="index.html#gallery" class="nav-link">Gallery</a></li>
+				<li><a href="registration.html" class="nav-link active">Registration</a></li>
+				<li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
 				<li><a href="index.html#contact" class="nav-link">Contact</a></li>
 			</ul>
 			<div class="hamburger">
@@ -33,180 +54,460 @@
 		</div>
 	</nav>
 
-	<section class="hero" style="height: 45vh;">
-		<div class="hero-background" style="background-image: url('photos/pi1 (74) (1).JPG');"></div>
-		<div class="hero-overlay"></div>
-		<div class="hero-content">
-			<div class="hero-text" data-aos="fade-up">
+	<!-- Registration Hero Section -->
+	<section class="registration-hero">
+		<div class="registration-hero-background">
+			<div class="hero-overlay"></div>
+		</div>
+		<div class="container">
+			<div class="registration-hero-content" data-aos="fade-up">
+				<div class="breadcrumb">
+					<a href="index.html">Home</a> <i class="fas fa-chevron-right"></i> <span>Registration</span>
+				</div>
 				<h1>School Registration</h1>
-				<p>Join the Uganda Schools Rugby Association</p>
+				<p>Join the Uganda Schools Rugby Association and become part of the growing rugby community</p>
+				<div class="hero-stats">
+					<div class="hero-stat">
+						<div class="stat-number">150+</div>
+						<div class="stat-label">Member Schools</div>
+					</div>
+					<div class="hero-stat">
+						<div class="stat-number">2500+</div>
+						<div class="stat-label">Students</div>
+					</div>
+					<div class="hero-stat">
+						<div class="stat-number">25</div>
+						<div class="stat-label">Tournaments</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</section>
 
-	<section class="registration" style="padding-top: 60px;">
+	<!-- Registration Process Steps -->
+	<section class="registration-steps">
 		<div class="container">
 			<div class="section-header" data-aos="fade-up">
-				<h2>Join USRA</h2>
-				<p>Provide accurate information for verification</p>
+				<h2>Registration Process</h2>
+				<p>Follow these simple steps to join USRA</p>
 			</div>
-
-			<div class="registration-content">
-				<div class="registration-info" data-aos="fade-right">
-					<div id="authBox" class="auth-box" style="margin-bottom: 1.5rem;">
+			
+			<div class="steps-grid" data-aos="fade-up" data-aos-delay="200">
+				<div class="step-item">
+					<div class="step-number">01</div>
+					<div class="step-content">
 						<h3>Administrator Sign In</h3>
-						<form id="authForm">
-							<div class="form-group">
-								<label for="authEmail">Email *</label>
-								<input type="email" id="authEmail" required>
+						<p>School administrators must create an account and sign in to register their institution</p>
+					</div>
+				</div>
+				
+				<div class="step-item">
+					<div class="step-number">02</div>
+					<div class="step-content">
+						<h3>School Information</h3>
+						<p>Provide complete school details including contact information and location</p>
+					</div>
+				</div>
+				
+				<div class="step-item">
+					<div class="step-number">03</div>
+					<div class="step-content">
+						<h3>Administrator Details</h3>
+						<p>Submit personal information and required documents for verification</p>
+					</div>
+				</div>
+				
+				<div class="step-item">
+					<div class="step-number">04</div>
+					<div class="step-content">
+						<h3>Submit & Review</h3>
+						<p>Submit your application for review and approval by USRA officials</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Main Registration Section -->
+	<section class="registration-main">
+		<div class="container">
+			<div class="registration-wrapper">
+				
+				<!-- Authentication & Guidelines Sidebar -->
+				<div class="registration-sidebar">
+					
+					<!-- Authentication Section -->
+					<div class="auth-section" data-aos="fade-right">
+						<div class="section-card">
+							<div class="card-header">
+								<div class="card-icon">
+									<i class="fas fa-user-shield"></i>
+								</div>
+								<h3>Administrator Authentication</h3>
+								<p>Sign in to submit registration</p>
 							</div>
-							<div class="form-group">
-								<label for="authPassword">Password *</label>
-								<input type="password" id="authPassword" required>
+							
+							<div id="authBox" class="auth-form-container">
+								<form id="authForm" class="auth-form">
+									<div class="form-group">
+										<label for="authEmail">Email Address</label>
+										<div class="input-wrapper">
+											<i class="fas fa-envelope"></i>
+											<input type="email" id="authEmail" placeholder="Enter your email" required>
+										</div>
+									</div>
+									
+									<div class="form-group">
+										<label for="authPassword">Password</label>
+										<div class="input-wrapper">
+											<i class="fas fa-lock"></i>
+											<input type="password" id="authPassword" placeholder="Enter your password" required>
+										</div>
+									</div>
+									
+									<div class="auth-buttons">
+										<button type="submit" class="btn btn-primary" id="btnSignIn">
+											<i class="fas fa-sign-in-alt"></i>
+											Sign In
+										</button>
+										<button type="button" class="btn btn-outline" id="btnSignUp">
+											<i class="fas fa-user-plus"></i>
+											Create Account
+										</button>
+										<button type="button" class="btn btn-outline" id="btnSignOut" style="display:none;">
+											<i class="fas fa-sign-out-alt"></i>
+											Sign Out
+										</button>
+									</div>
+									
+									<div id="authStatus" class="auth-status"></div>
+								</form>
 							</div>
-							<div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-								<button type="submit" class="btn btn-primary" id="btnSignIn">Sign In</button>
-								<button type="button" class="btn btn-secondary" id="btnSignUp">Create Account</button>
-								<button type="button" class="btn btn-secondary" id="btnSignOut" style="display:none;">Sign Out</button>
-							</div>
-							<small id="authStatus" style="display:block; margin-top:.5rem;"></small>
-						</form>
+						</div>
 					</div>
 
-					<h3>Registration Guidelines</h3>
-					<ul>
-						<li>Ensure uploaded images are clear (JPG/PNG, max 5MB).</li>
-						<li>Supporting documents may include authorization letters, certificates, etc. (PDF, max 10MB).</li>
-						<li>All fields marked with * are required.</li>
-					</ul>
+					<!-- Guidelines Section -->
+					<div class="guidelines-section" data-aos="fade-right" data-aos-delay="200">
+						<div class="section-card">
+							<div class="card-header">
+								<div class="card-icon">
+									<i class="fas fa-info-circle"></i>
+								</div>
+								<h3>Registration Guidelines</h3>
+							</div>
+							
+							<div class="guidelines-content">
+								<div class="guideline-item">
+									<i class="fas fa-check-circle"></i>
+									<div>
+										<h4>Required Fields</h4>
+										<p>All fields marked with asterisk (*) are mandatory</p>
+									</div>
+								</div>
+								
+								<div class="guideline-item">
+									<i class="fas fa-image"></i>
+									<div>
+										<h4>Image Upload</h4>
+										<p>Images should be clear, JPG/PNG format, maximum 5MB</p>
+									</div>
+								</div>
+								
+								<div class="guideline-item">
+									<i class="fas fa-file-pdf"></i>
+									<div>
+										<h4>Documents</h4>
+										<p>Supporting documents in PDF format, maximum 10MB</p>
+									</div>
+								</div>
+								
+								<div class="guideline-item">
+									<i class="fas fa-shield-alt"></i>
+									<div>
+										<h4>Data Security</h4>
+										<p>All information is securely stored and verified</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 
-				<div class="registration-form" data-aos="fade-left">
-					<form id="schoolRegistrationForm" enctype="multipart/form-data" data-autosave="registration">
-						<h3>School Information</h3>
-						<div class="form-group">
-							<label for="schoolName">School Name *</label>
-							<input type="text" id="schoolName" name="schoolName" required>
+				<!-- Registration Form -->
+				<div class="registration-form-container" data-aos="fade-left">
+					<div class="form-progress">
+						<div class="progress-step active" data-step="1">
+							<div class="step-circle">1</div>
+							<span>School Info</span>
 						</div>
-						<div class="form-group">
-							<label for="centerNumber">School Centre Number *</label>
-							<input type="text" id="centerNumber" name="centerNumber" required>
+						<div class="progress-line"></div>
+						<div class="progress-step" data-step="2">
+							<div class="step-circle">2</div>
+							<span>Administrator</span>
 						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="schoolEmail">School Email *</label>
-								<input type="email" id="schoolEmail" name="schoolEmail" required>
-							</div>
-							<div class="form-group">
-								<label for="schoolPhone1">School Contact 1 *</label>
-								<input type="tel" id="schoolPhone1" name="schoolPhone1" required>
-							</div>
+						<div class="progress-line"></div>
+						<div class="progress-step" data-step="3">
+							<div class="step-circle">3</div>
+							<span>Submit</span>
 						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="schoolPhone2">School Contact 2</label>
-								<input type="tel" id="schoolPhone2" name="schoolPhone2">
+					</div>
+
+					<form id="schoolRegistrationForm" enctype="multipart/form-data" data-autosave="registration" class="registration-form">
+						
+						<!-- Step 1: School Information -->
+						<div class="form-step active" data-step="1">
+							<div class="step-header">
+								<h3><i class="fas fa-school"></i> School Information</h3>
+								<p>Provide your school's basic information and contact details</p>
 							</div>
-							<div class="form-group">
-								<label for="address">School Address *</label>
-								<input type="text" id="address" name="address" required>
+							
+							<div class="form-grid">
+								<div class="form-group full-width">
+									<label for="schoolName">School Name <span class="required">*</span></label>
+									<input type="text" id="schoolName" name="schoolName" placeholder="Enter full school name" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="centerNumber">School Centre Number <span class="required">*</span></label>
+									<input type="text" id="centerNumber" name="centerNumber" placeholder="e.g. U001" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="schoolEmail">School Email <span class="required">*</span></label>
+									<input type="email" id="schoolEmail" name="schoolEmail" placeholder="school@example.com" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="schoolPhone1">Primary Contact <span class="required">*</span></label>
+									<input type="tel" id="schoolPhone1" name="schoolPhone1" placeholder="+256 700 000 000" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="schoolPhone2">Secondary Contact</label>
+									<input type="tel" id="schoolPhone2" name="schoolPhone2" placeholder="+256 700 000 000">
+								</div>
+								
+								<div class="form-group full-width">
+									<label for="address">School Address <span class="required">*</span></label>
+									<input type="text" id="address" name="address" placeholder="Complete school address" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="region">Region <span class="required">*</span></label>
+									<select id="region" name="region" required>
+										<option value="">Select region</option>
+										<option value="Central">Central</option>
+										<option value="Eastern">Eastern</option>
+										<option value="Northern">Northern</option>
+										<option value="Western">Western</option>
+										<option value="West Nile">West Nile</option>
+										<option value="Karamoja">Karamoja</option>
+										<option value="South Western">South Western</option>
+										<option value="Bugisu">Bugisu</option>
+									</select>
+								</div>
+								
+								<div class="form-group">
+									<label for="district">District <span class="required">*</span></label>
+									<input type="text" id="district" name="district" placeholder="Enter district name" required>
+								</div>
+								
+								<div class="form-group full-width">
+									<label for="schoolBadge">School Badge</label>
+									<div class="file-upload">
+										<input type="file" id="schoolBadge" name="schoolBadge" accept="image/*">
+										<div class="file-upload-area">
+											<i class="fas fa-cloud-upload-alt"></i>
+											<span>Choose school badge image</span>
+											<small>PNG/JPG, max 5MB</small>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="region">Region *</label>
-								<select id="region" name="region" required>
-									<option value="">Select region</option>
-									<option>Central</option>
-									<option>Eastern</option>
-									<option>Northern</option>
-									<option>Western</option>
-									<option>West Nile</option>
-									<option>Karamoja</option>
-									<option>South Western</option>
-									<option>Bugisu</option>
-								</select>
+							
+							<div class="step-navigation">
+								<button type="button" class="btn btn-primary next-step">
+									Next Step <i class="fas fa-arrow-right"></i>
+								</button>
 							</div>
-							<div class="form-group">
-								<label for="district">District *</label>
-								<input type="text" id="district" name="district" required>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="schoolBadge">School Badge (PNG/JPG, max 5MB)</label>
-							<input type="file" id="schoolBadge" name="schoolBadge" accept="image/*">
 						</div>
 
-						<h3 style="margin-top:2rem;">Administrator Information</h3>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="adminFullName">Full Name *</label>
-								<input type="text" id="adminFullName" name="adminFullName" required>
+						<!-- Step 2: Administrator Information -->
+						<div class="form-step" data-step="2">
+							<div class="step-header">
+								<h3><i class="fas fa-user-tie"></i> Administrator Information</h3>
+								<p>Provide details about the school administrator or contact person</p>
 							</div>
-							<div class="form-group">
-								<label for="nin">National ID Number (NIN) *</label>
-								<input type="text" id="nin" name="nin" required>
+							
+							<div class="form-grid">
+								<div class="form-group">
+									<label for="adminFullName">Full Name <span class="required">*</span></label>
+									<input type="text" id="adminFullName" name="adminFullName" placeholder="Enter full name" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="nin">National ID Number (NIN) <span class="required">*</span></label>
+									<input type="text" id="nin" name="nin" placeholder="Enter NIN" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="role">Role/Position <span class="required">*</span></label>
+									<input type="text" id="role" name="role" placeholder="e.g. Headteacher, Sports Coordinator" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="sex">Gender <span class="required">*</span></label>
+									<select id="sex" name="sex" required>
+										<option value="">Select gender</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+									</select>
+								</div>
+								
+								<div class="form-group">
+									<label for="qualification">Highest Qualification <span class="required">*</span></label>
+									<input type="text" id="qualification" name="qualification" placeholder="e.g. Bachelor's Degree, Master's" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="contact1">Primary Contact <span class="required">*</span></label>
+									<input type="tel" id="contact1" name="contact1" placeholder="+256 700 000 000" required>
+								</div>
+								
+								<div class="form-group">
+									<label for="contact2">Secondary Contact</label>
+									<input type="tel" id="contact2" name="contact2" placeholder="+256 700 000 000">
+								</div>
+								
+								<div class="form-group">
+									<label for="profilePhoto">Profile Photo</label>
+									<div class="file-upload">
+										<input type="file" id="profilePhoto" name="profilePhoto" accept="image/*">
+										<div class="file-upload-area">
+											<i class="fas fa-camera"></i>
+											<span>Upload profile photo</span>
+											<small>PNG/JPG, max 5MB</small>
+										</div>
+									</div>
+								</div>
+								
+								<div class="form-group full-width">
+									<label for="supportingDocs">TMIS Certificate</label>
+									<div class="file-upload">
+										<input type="file" id="supportingDocs" name="supportingDocs" accept="application/pdf">
+										<div class="file-upload-area">
+											<i class="fas fa-file-pdf"></i>
+											<span>Upload TMIS certificate</span>
+											<small>PDF format, max 10MB</small>
+										</div>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="role">Role *</label>
-								<input type="text" id="role" name="role" required>
+							
+							<div class="step-navigation">
+								<button type="button" class="btn btn-outline prev-step">
+									<i class="fas fa-arrow-left"></i> Previous
+								</button>
+								<button type="button" class="btn btn-primary next-step">
+									Next Step <i class="fas fa-arrow-right"></i>
+								</button>
 							</div>
-							<div class="form-group">
-								<label for="sex">Sex *</label>
-								<select id="sex" name="sex" required>
-									<option value="">Select</option>
-									<option>Male</option>
-									<option>Female</option>
-								</select>
-							</div>
-						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="qualification">Highest Qualification *</label>
-								<input type="text" id="qualification" name="qualification" required>
-							</div>
-							<div class="form-group">
-								<label for="contact1">Personal Contact 1 *</label>
-								<input type="tel" id="contact1" name="contact1" required>
-							</div>
-						</div>
-						<div class="two-col">
-							<div class="form-group">
-								<label for="contact2">Personal Contact 2</label>
-								<input type="tel" id="contact2" name="contact2">
-							</div>
-							<div class="form-group">
-								<label for="profilePhoto">Profile Photo (PNG/JPG, max 5MB)</label>
-								<input type="file" id="profilePhoto" name="profilePhoto" accept="image/*">
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="supportingDocs">Upload TMIS Certificate (PDF, max 10MB)</label>
-							<input type="file" id="supportingDocs" name="supportingDocs" accept="application/pdf">
 						</div>
 
-						<button type="submit" class="btn btn-primary">Submit Registration</button>
-						<small style="display:block; margin-top:.5rem;">You must be signed in as an administrator to submit.</small>
+						<!-- Step 3: Review & Submit -->
+						<div class="form-step" data-step="3">
+							<div class="step-header">
+								<h3><i class="fas fa-check-circle"></i> Review & Submit</h3>
+								<p>Please review your information before submitting</p>
+							</div>
+							
+							<div class="form-summary">
+								<div class="summary-section">
+									<h4>School Information</h4>
+									<div class="summary-grid">
+										<div class="summary-item">
+											<span class="label">School Name:</span>
+											<span class="value" data-field="schoolName">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">Centre Number:</span>
+											<span class="value" data-field="centerNumber">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">Region:</span>
+											<span class="value" data-field="region">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">District:</span>
+											<span class="value" data-field="district">-</span>
+										</div>
+									</div>
+								</div>
+								
+								<div class="summary-section">
+									<h4>Administrator Information</h4>
+									<div class="summary-grid">
+										<div class="summary-item">
+											<span class="label">Name:</span>
+											<span class="value" data-field="adminFullName">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">Role:</span>
+											<span class="value" data-field="role">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">Contact:</span>
+											<span class="value" data-field="contact1">-</span>
+										</div>
+										<div class="summary-item">
+											<span class="label">Email:</span>
+											<span class="value" data-field="schoolEmail">-</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<div class="terms-section">
+								<label class="checkbox-wrapper">
+									<input type="checkbox" id="termsAccept" required>
+									<span class="checkmark"></span>
+									<span class="checkbox-text">I confirm that all information provided is accurate and I agree to USRA's <a href="#" class="terms-link">terms and conditions</a></span>
+								</label>
+							</div>
+							
+							<div class="step-navigation">
+								<button type="button" class="btn btn-outline prev-step">
+									<i class="fas fa-arrow-left"></i> Previous
+								</button>
+								<button type="submit" class="btn btn-primary submit-form">
+									<i class="fas fa-paper-plane"></i> Submit Registration
+								</button>
+							</div>
+							
+							<div class="auth-reminder">
+								<i class="fas fa-info-circle"></i>
+								<span>You must be signed in as an administrator to submit the registration</span>
+							</div>
+						</div>
 					</form>
 				</div>
 			</div>
 		</div>
 	</section>
 
+	<!-- Footer -->
 	<footer class="footer">
 		<div class="container">
 			<div class="footer-content">
 				<div class="footer-section">
 					<div class="footer-logo">
-						<img src="photos/usraLogo.png" alt="USRA Logo">
+						<img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
 						<span>USRA</span>
 					</div>
 					<p>Developing the future of rugby in Uganda through school sports excellence.</p>
 					<div class="social-links">
 						<a href="#"><i class="fab fa-facebook"></i></a>
-						<a href="#"><i class="fab fa-twitter"></i></a>
+						<a href="@USRA_Official1"><i class="fab fa-twitter"></i></a>
 						<a href="#"><i class="fab fa-instagram"></i></a>
 						<a href="#"><i class="fab fa-youtube"></i></a>
 					</div>
@@ -218,15 +519,18 @@
 						<li><a href="index.html#about">About</a></li>
 						<li><a href="index.html#chairman">Chairman's Message</a></li>
 						<li><a href="registration.html">Registration</a></li>
+						<li><a href="https://athletesmedicalfund.com/">Athletes Medical Fund</a></li>
 					</ul>
 				</div>
 				<div class="footer-section">
-					<h4>Resources</h4>
+					<h4>Downloads</h4>
 					<ul>
-						<li><a href="#">Tournament Rules</a></li>
-						<li><a href="#">Training Programs</a></li>
-						<li><a href="#">Player Guidelines</a></li>
-						<li><a href="#">News & Updates</a></li>
+						<li><a href="photos/2025 USRA COMPETITIONS MANUAL FINAL.pdf" download="USRA-Tournament-Manual-2025.pdf" target="_blank">
+							<i class="fas fa-download"></i> Tournament Manual</a></li>
+						<li><a href="assets/docs/school-registration-form.pdf" download="USRA-School-Registration-Form.pdf" target="_blank">
+							<i class="fas fa-download"></i> Registration Form</a></li>
+						<li><a href="photos/USRA ACCOUNTABILITY FORM.pdf" download="USRA-Accountability-Form.pdf" target="_blank">
+							<i class="fas fa-download"></i> Accountability Form</a></li>
 					</ul>
 				</div>
 				<div class="footer-section">
@@ -239,21 +543,16 @@
 				</div>
 			</div>
 			<div class="footer-bottom">
-				<p>&copy; 2024 Uganda Schools Rugby Association. All rights reserved.</p>
+				<p>&copy; 2025 Uganda Schools Rugby Association. All rights reserved.</p>
 			</div>
 		</div>
 	</footer>
 
-	<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-	<script src="supabaseClient.js"></script>
-	<script src="script.js"></script>
-	<script>
-		// guard homepage-only listeners
-		(function(){
-			const homeForm = document.getElementById('registrationForm');
-			if (!homeForm) return;
-		})();
-	</script>
+	<!-- Load scripts asynchronously for better performance -->
+	<script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+	<script defer src="supabaseClient.js"></script>
+	<script defer src="script.js"></script>
+	<script defer src="registration-form.js"></script>
 </body>
 </html>
 
