@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Uganda Schools Rugby Association (USRA)</title>
+    <!-- Preload critical resources -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="photos/usraLogo.png" as="image">
+    
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Non-critical CSS - load asynchronously -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    
+    <link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+    
+    <!-- Scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* Events Page Specific Styles - USRA Theme */
+        .events-hero {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #7f1d1d 100%);
+            color: white;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .events-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            opacity: 0.6;
+        }
+        
+        .events-hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="rugby-pattern" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="2" fill="rgba(255,255,255,0.05)"/><ellipse cx="25" cy="25" rx="8" ry="12" stroke="rgba(255,255,255,0.03)" stroke-width="0.5" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23rugby-pattern)"/></svg>');
+            opacity: 0.4;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(220, 38, 38, 0.1);
+            position: relative;
+            transform: translateZ(0);
+        }
+        
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #dc2626, #ef4444, #f97316);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .event-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+        
+        .event-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .event-card:hover .event-btn {
+            background: linear-gradient(45deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+        }
+        
+        .event-card:hover .event-image {
+            transform: scale(1.05);
+        }
+        
+        .event-image {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .event-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .event-card:hover .event-image::after {
+            opacity: 1;
+        }
+        
+        .event-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #dc2626;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .event-badge.featured {
+            background: #dc2626;
+        }
+        
+        .event-badge.new {
+            background: #059669;
+        }
+        
+        .event-badge.upcoming {
+            background: #7c3aed;
+        }
+        
+        .event-content {
+            padding: 24px;
+        }
+        
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .event-meta i {
+            width: 16px;
+            text-align: center;
+        }
+        
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .event-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .event-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .event-btn {
+            background: linear-gradient(45deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.025em;
+        }
+        
+        .event-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .event-btn:hover::before {
+            left: 100%;
+        }
+        
+        .event-btn:hover {
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 12px 24px;
+            border: 2px solid rgba(220, 38, 38, 0.2);
+            border-radius: 30px;
+            background: white;
+            color: #6b7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.025em;
+        }
+        
+        .filter-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .filter-tab:hover::before {
+            left: 100%;
+        }
+        
+        .filter-tab:hover,
+        .filter-tab.active {
+            border-color: #dc2626;
+            background: linear-gradient(45deg, #dc2626, #b91c1c);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.25);
+        }
+        
+        .filter-tab:active {
+            transform: translateY(0);
+        }
+        
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #7f1d1d 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            opacity: 0.8;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            max-width: 400px;
+            margin: 0 auto;
+            gap: 0;
+        }
+        
+        .newsletter-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .newsletter-btn {
+            background: linear-gradient(45deg, #1f2937, #111827);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 0 12px 12px 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .newsletter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .newsletter-btn:hover::before {
+            left: 100%;
+        }
+        
+        .newsletter-btn:hover {
+            background: linear-gradient(45deg, #000, #111827);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .newsletter-input {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .newsletter-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Timeline Toggle */
+        .timeline-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 50px;
+            padding: 6px;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            background: transparent;
+            color: var(--primary-red);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary-red);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .event-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .toggle-btn.active .event-count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Event Cards */
+        .event-status {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 40px;
+            height: 40px;
+            background: rgba(34, 197, 94, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .countdown-timer {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .countdown-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .event-leagues {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+            margin-bottom: 16px;
+        }
+
+        .league-tag {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--primary-red);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Enhanced Event Badges */
+        .event-badge.past {
+            background: #6b7280;
+        }
+
+        .event-badge.current {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            animation: pulse 2s infinite;
+        }
+
+        .event-badge.national {
+            background: #7c3aed;
+        }
+
+        .event-badge.international {
+            background: #0891b2;
+        }
+
+        .event-badge.special {
+            background: linear-gradient(45deg, #f59e0b, #eab308);
+        }
+
+        /* Current Event Status */
+        .event-status.current {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 30px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-header h2 i {
+            margin-right: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 0;
+        }
+
+        .modal-image {
+            position: relative;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            background-image: url('photos/group.jpg');
+        }
+
+        .modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .modal-details {
+            padding: 30px;
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section h3 {
+            color: #dc2626;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-section h3 i {
+            margin-right: 10px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .detail-item strong {
+            color: #374151;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .schools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .region-group h4 {
+            color: #dc2626;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #fecaca;
+        }
+
+        .region-group ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .region-group li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+        }
+
+        .region-group li:last-child {
+            border-bottom: none;
+        }
+
+        .agenda-list {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .agenda-item:last-child {
+            border-bottom: none;
+        }
+
+        .agenda-item .time {
+            background: #dc2626;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 20px;
+        }
+
+        .agenda-item .item {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .download-section p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .download-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .download-btn i {
+            margin-right: 8px;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-primary i {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-tabs {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .toggle-container {
+                flex-direction: column;
+                align-items: stretch;
+                border-radius: 15px;
+            }
+
+            .toggle-btn {
+                justify-content: center;
+                border-radius: 15px;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+                max-width: 300px;
+            }
+            
+            .newsletter-input,
+            .newsletter-btn {
+                border-radius: 8px;
+            }
+
+            .event-leagues {
+                justify-content: center;
+            }
+
+            .modal-content {
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .modal-details {
+                padding: 20px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .schools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .download-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Simple & Professional Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="photos/usraLogo.png" alt="USRA Logo">
+                <span>USRA</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="events.html" class="nav-link active">Events</a></li>
+                <li><a href="registration.html" class="nav-link">Register</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li class="nav-more">
+                    <a href="#" class="nav-link">More ↓</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="workplan.html">Workplan 2025</a></li>
+                        <li><a href="medical-fund.html">Medical Fund</a></li>
+                        <li><a href="photos.html">Photos</a></li>
+                    </ul>
+                </li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="events-hero">
+        <div class="container">
+            <div class="text-center" style="position: relative; z-index: 2;" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    Rugby Events & Tournaments
+                </h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto mb-8" style="opacity: 0.95; line-height: 1.7;">
+                    Join us for exciting rugby competitions, training camps, and community events across Uganda. 
+                    Discover upcoming tournaments and be part of the growing rugby community.
+                </p>
+                <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center" data-aos="fade-up" data-aos-delay="200">
+                    <a href="registration.html" class="btn btn-primary" style="padding: 16px 32px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(45deg, #fff, #f8f9fa); color: #dc2626; font-weight: 700; box-shadow: 0 8px 25px rgba(255,255,255,0.3); transition: all 0.4s ease;">
+                        Register Your School
+                    </a>
+                    <a href="#events" class="btn btn-secondary" style="padding: 16px 32px; font-size: 1.1rem; border-radius: 50px; background: transparent; color: white; border: 2px solid rgba(255,255,255,0.5); font-weight: 600; transition: all 0.4s ease;">
+                        View Events
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Section -->
+    <section id="events" class="py-16 bg-white">
+        <div class="container">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">USRA 2025 Events Calendar</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Complete schedule of rugby tournaments, training programs, and competitions throughout 2025
+                </p>
+            </div>
+
+            <!-- Event Timeline Toggle -->
+            <div class="timeline-toggle mb-12" data-aos="fade-up">
+                <div class="toggle-container">
+                    <button class="toggle-btn active" data-timeline="upcoming">
+                        <i class="fas fa-clock"></i>
+                        Current & Upcoming
+                        <span class="event-count">3</span>
+                    </button>
+                    <button class="toggle-btn" data-timeline="past">
+                        <i class="fas fa-history"></i>
+                        Past Events
+                        <span class="event-count">9</span>
+                    </button>
+                    <button class="toggle-btn" data-timeline="all">
+                        <i class="fas fa-calendar-alt"></i>
+                        All Events
+                        <span class="event-count">12</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs mb-12" data-aos="fade-up">
+                <button class="filter-tab active" data-filter="all">All Events</button>
+                <button class="filter-tab" data-filter="tournaments">Tournaments</button>
+                <button class="filter-tab" data-filter="meetings">Meetings</button>
+                <button class="filter-tab" data-filter="national">National Games</button>
+                <button class="filter-tab" data-filter="international">International</button>
+            </div>
+
+            <!-- Events Grid - Chronologically Ordered from Today -->
+            <div class="events-grid upcoming-events" data-timeline="upcoming">
+                <!-- Current Event: Annual General Meeting (TODAY - Sept 6) -->
+                <div class="event-card" data-category="meetings" data-timeline="current" data-aos="fade-up">
+                    <div class="event-image" style="background-image: url('photos/group.jpg')">
+                        <div class="event-badge current">Happening Today</div>
+                        <div class="event-status current">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> September 6, 2025</span>
+                            <span><i class="fas fa-users"></i> EXCOM</span>
+                        </div>
+                        <h3 class="event-title">Annual General Meeting</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>USRA Headquarters, Kampala</span>
+                        </div>
+                        <p class="event-description">
+                            Annual general meeting to review the year's achievements and plan for the future.
+                        </p>
+                        <button class="event-btn" onclick="openAGMModal()">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Next Event: Independence Cup (Oct 9) -->
+                <div class="event-card" data-category="tournaments" data-timeline="upcoming" data-aos="fade-up" data-aos-delay="100">
+                    <div class="event-image" style="background-image: url('photos/pi1 (63) (1).JPG')">
+                        <div class="event-badge special">Next Event</div>
+                        <div class="countdown-timer" data-date="2025-10-09">
+                            <div class="countdown-number">33</div>
+                            <div class="countdown-label">Days</div>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> October 9, 2025</span>
+                            <span><i class="fas fa-flag"></i> Independence Day</span>
+                        </div>
+                        <h3 class="event-title">Independence Cup</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kampala - Venue TBA</span>
+                        </div>
+                        <p class="event-description">
+                            Special tournament celebrating Uganda's independence with participation from all regions.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Following Event: Abu Dhabi World Schools Festival (Dec 14-20) -->
+                <div class="event-card" data-category="international" data-timeline="upcoming" data-aos="fade-up" data-aos-delay="200">
+                    <div class="event-image" style="background-image: url('photos/pi1 (46) (1).jpg')">
+                        <div class="event-badge international">International</div>
+                        <div class="countdown-timer" data-date="2025-12-14">
+                            <div class="countdown-number">99</div>
+                            <div class="countdown-label">Days</div>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> December 14-20, 2025</span>
+                            <span><i class="fas fa-globe"></i> World Competition</span>
+                        </div>
+                        <h3 class="event-title">Abu Dhabi World Schools Festival</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Abu Dhabi, UAE</span>
+                        </div>
+                        <p class="event-description">
+                            Elite international schools rugby festival featuring Uganda's U20 select team.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 1: EXCOM Annual Planning Meeting -->
+                <div class="event-card" data-category="meetings" data-timeline="past" data-aos="fade-up" data-aos-delay="300">
+                    <div class="event-image" style="background-image: url('photos/pi1 (24) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> January 15, 2025</span>
+                            <span><i class="fas fa-users"></i> EXCOM</span>
+                        </div>
+                        <h3 class="event-title">EXCOM Annual Planning Meeting</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>USRA Headquarters, Kampala</span>
+                        </div>
+                        <p class="event-description">
+                            Annual executive committee meeting to plan the year's activities and set strategic direction.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 2: Ball Game One Qualifiers (Feb-Apr) -->
+                <div class="event-card" data-category="tournaments" data-timeline="past" data-aos="fade-up" data-aos-delay="400">
+                    <div class="event-image" style="background-image: url('photos/pi1 (10) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> Feb 23 - Apr 6, 2025</span>
+                            <span><i class="fas fa-trophy"></i> Regional Qualifiers</span>
+                        </div>
+                        <h3 class="event-title">Ball Game One Qualifiers</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>All Regions - Multiple Venues</span>
+                        </div>
+                        <p class="event-description">
+                            Regional qualifying tournaments across Central, Eastern, Western, and Northern regions. 
+                            Multiple leagues including main, second division, and girls' competitions.
+                        </p>
+                        <div class="event-leagues">
+                            <span class="league-tag">Central Main League</span>
+                            <span class="league-tag">Regional Girls' Leagues</span>
+                            <span class="league-tag">+7 more leagues</span>
+                        </div>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 3: Regional Evaluation Meetings (Apr 6-13) -->
+                <div class="event-card" data-category="meetings" data-timeline="past" data-aos="fade-up" data-aos-delay="500">
+                    <div class="event-image" style="background-image: url('photos/pi1 (63) (1).JPG')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> April 6-13, 2025</span>
+                            <span><i class="fas fa-users"></i> Regional Reps</span>
+                        </div>
+                        <h3 class="event-title">Regional Ball Game One Qualifiers Evaluation</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Regional Centers</span>
+                        </div>
+                        <p class="event-description">
+                            Post-qualifier evaluation meetings to assess performance and prepare for national games.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 4: Ball Game One Evaluation Meeting (Apr 19) -->
+                <div class="event-card" data-category="meetings" data-timeline="past" data-aos="fade-up" data-aos-delay="600">
+                    <div class="event-image" style="background-image: url('photos/pi1 (46) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> April 19, 2025</span>
+                            <span><i class="fas fa-users"></i> EXCOM</span>
+                        </div>
+                        <h3 class="event-title">Ball Game One Evaluation & Planning Meeting</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>USRA Headquarters, Kampala</span>
+                        </div>
+                        <p class="event-description">
+                            Comprehensive evaluation of qualifiers and strategic planning for national ball game one.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 5: USSSA National Ball Game One (May 4-14) -->
+                <div class="event-card" data-category="national" data-timeline="past" data-aos="fade-up" data-aos-delay="700">
+                    <div class="event-image" style="background-image: url('photos/pi1 (43) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> May 4-14, 2025</span>
+                            <span><i class="fas fa-trophy"></i> National Championship</span>
+                        </div>
+                        <h3 class="event-title">USSSA National Ball Game One</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kampala Rugby Club</span>
+                        </div>
+                        <p class="event-description">
+                            The premier national schools rugby championship featuring qualified teams from across Uganda.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 6: Ball Game Two Qualifiers (June 8-29) -->
+                <div class="event-card" data-category="tournaments" data-timeline="past" data-aos="fade-up" data-aos-delay="800">
+                    <div class="event-image" style="background-image: url('photos/pi1 (78) (1).JPG')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> June 8-29, 2025</span>
+                            <span><i class="fas fa-bolt"></i> 7s Format</span>
+                        </div>
+                        <h3 class="event-title">Ball Game Two Qualifiers (7s Tournaments)</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Regional Venues</span>
+                        </div>
+                        <p class="event-description">
+                            Fast-paced 7s rugby qualifiers including Kabaka Coronation, Kyabazinga, and regional championships.
+                        </p>
+                        <div class="event-leagues">
+                            <span class="league-tag">Kabaka Coronation 7s</span>
+                            <span class="league-tag">Kyabazinga 7s</span>
+                            <span class="league-tag">+3 more tournaments</span>
+                        </div>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 7: Ball Game Two Evaluation & AGM Planning (July 5) -->
+                <div class="event-card" data-category="meetings" data-timeline="past" data-aos="fade-up" data-aos-delay="900">
+                    <div class="event-image" style="background-image: url('photos/pi1 (20) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> July 5, 2025</span>
+                            <span><i class="fas fa-users"></i> EXCOM</span>
+                        </div>
+                        <h3 class="event-title">Ball Game Two Qualifiers Evaluation and AGM Planning</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>USRA Headquarters, Kampala</span>
+                        </div>
+                        <p class="event-description">
+                            Evaluation of 7s tournaments and strategic planning for Ball Game Two and AGM preparations.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 8: USSSA National Ball Game Two (July 9-18) -->
+                <div class="event-card" data-category="national" data-timeline="past" data-aos="fade-up" data-aos-delay="1000">
+                    <div class="event-image" style="background-image: url('photos/pi1 (24) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> July 9-18, 2025</span>
+                            <span><i class="fas fa-trophy"></i> National Championship</span>
+                        </div>
+                        <h3 class="event-title">USSSA National Ball Game Two</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Kampala Rugby Club</span>
+                        </div>
+                        <p class="event-description">
+                            Second national schools rugby championship featuring qualified teams from 7s tournaments.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+
+                <!-- Past Event 9: FEASSA Games (Aug 19-27) -->
+                <div class="event-card" data-category="international" data-timeline="past" data-aos="fade-up" data-aos-delay="1100">
+                    <div class="event-image" style="background-image: url('photos/pi1 (10) (1).jpg')">
+                        <div class="event-badge past">Completed</div>
+                        <div class="event-status">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-meta">
+                            <span><i class="fas fa-calendar"></i> August 19-27, 2025</span>
+                            <span><i class="fas fa-globe-africa"></i> Regional Competition</span>
+                        </div>
+                        <h3 class="event-title">FEASSA Games</h3>
+                        <div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Nairobi, Kenya</span>
+                        </div>
+                        <p class="event-description">
+                            Federation of East African Secondary Schools Sports Association games featuring Uganda's best.
+                        </p>
+                        <button class="event-btn">More Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button class="btn btn-secondary">View All Events</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6" data-aos="fade-up">Stay Updated on Rugby Events</h2>
+            <p class="text-lg max-w-2xl mx-auto mb-8" data-aos="fade-up" data-aos-delay="100">
+                Subscribe to our newsletter and get the latest updates on tournaments, training programs, 
+                and rugby events across Uganda.
+            </p>
+            <div class="newsletter-form" data-aos="fade-up" data-aos-delay="200">
+                <input type="email" placeholder="Your email address" class="newsletter-input">
+                <button class="newsletter-btn">Subscribe</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- AGM Modal -->
+    <div id="agmModal" class="modal-overlay" onclick="closeAGMModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2><i class="fas fa-users"></i> Annual General Meeting 2025</h2>
+                <button class="modal-close" onclick="closeAGMModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Event Image -->
+                <div class="modal-image">
+                    <img src="photos/group.jpg" alt="USRA Annual General Meeting" />
+                    <div class="modal-badge">Happening Today</div>
+                </div>
+                
+                <!-- Event Details -->
+                <div class="modal-details">
+                    <div class="detail-section">
+                        <h3><i class="fas fa-calendar-alt"></i> Event Information</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <strong>Date:</strong> September 6, 2025
+                            </div>
+                            <div class="detail-item">
+                                <strong>Time:</strong> 9:00 AM - 4:00 PM
+                            </div>
+                            <div class="detail-item">
+                                <strong>Venue:</strong> USRA Headquarters, Lugogo Tennis Club
+                            </div>
+                            <div class="detail-item">
+                                <strong>Address:</strong> Lugogo Bypass, P.O. Box 22108, Kampala
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3><i class="fas fa-school"></i> Invited Schools & Representatives</h3>
+                        <div class="schools-grid">
+                            <div class="region-group">
+                                <h4>Central Region</h4>
+                                <ul>
+                                    <li>Makerere College School</li>
+                                    <li>London College of St. Lawrence</li>
+                                    <li>Hana International School</li>
+                                    <li>Boston High School Mpala</li>
+                                    <li>Mpunge Seed School</li>
+                                </ul>
+                            </div>
+                            <div class="region-group">
+                                <h4>Eastern Region</h4>
+                                <ul>
+                                    <li>Busoga College Mwiri</li>
+                                    <li>Kira College Butiki</li>
+                                    <li>Oxford High School Mbale</li>
+                                    <li>Nabumali High School</li>
+                                    <li>Great Aubrey Memorial</li>
+                                </ul>
+                            </div>
+                            <div class="region-group">
+                                <h4>Western Region</h4>
+                                <ul>
+                                    <li>Mbarara High School</li>
+                                    <li>Nyakasura School</li>
+                                    <li>Kijjabwemi S.S</li>
+                                    <li>Kigezi High School</li>
+                                </ul>
+                            </div>
+                            <div class="region-group">
+                                <h4>Northern Region</h4>
+                                <ul>
+                                    <li>Sir Samuel Baker School</li>
+                                    <li>Inomo S.S</li>
+                                    <li>Kitgum Comprehensive College</li>
+                                    <li>Dr. Obote College Boroboro</li>
+                                    <li>St. Augustine S.S</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3><i class="fas fa-clipboard-list"></i> Meeting Agenda</h3>
+                        <div class="agenda-list">
+                            <div class="agenda-item">
+                                <span class="time">9:00 AM</span>
+                                <span class="item">Registration & Welcome</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">9:30 AM</span>
+                                <span class="item">Chairman's Opening Remarks</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">10:00 AM</span>
+                                <span class="item">2025 Activities Review</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">11:00 AM</span>
+                                <span class="item">Financial Report</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">12:00 PM</span>
+                                <span class="item">Lunch Break</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">1:00 PM</span>
+                                <span class="item">2026 Strategic Planning</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">2:30 PM</span>
+                                <span class="item">Committee Reports</span>
+                            </div>
+                            <div class="agenda-item">
+                                <span class="time">3:30 PM</span>
+                                <span class="item">Closing Remarks & Next Steps</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3><i class="fas fa-download"></i> Registration & Documents</h3>
+                        <div class="download-section">
+                            <p>Download the official AGM registration form and meeting documents:</p>
+                            <div class="download-buttons">
+                                <a href="#" class="download-btn" onclick="downloadAGMForm()">
+                                    <i class="fas fa-file-pdf"></i>
+                                    AGM Registration Form
+                                </a>
+                                <a href="#" class="download-btn" onclick="downloadAGMAgenda()">
+                                    <i class="fas fa-file-alt"></i>
+                                    Meeting Agenda
+                                </a>
+                                <a href="#" class="download-btn" onclick="downloadAGMGuidelines()">
+                                    <i class="fas fa-info-circle"></i>
+                                    Attendance Guidelines
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAGMModal()">Close</button>
+                <button class="btn-primary" onclick="downloadAGMForm()">
+                    <i class="fas fa-download"></i> Download Registration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
+                        <span>Uganda Schools Rugby Association</span>
+                    </div>
+                    <p>Developing the future of rugby in Uganda through school sports excellence.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="https://x.com/USRA_Official1?t=QDgkxA6lKTkU835D19nSdg&s=09"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="index.html#about">About</a></li> 
+                        <li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="registration.html">Registration</a></li>
+                        <li><a href="medical-fund.html">Athletes Medical Fund</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Events</h4>
+                    <ul>
+                        <li><a href="events.html">Upcoming Events</a></li>
+                        <li><a href="events.html">Tournaments</a></li>
+                        <li><a href="events.html">Training Programs</a></li>
+                        <li><a href="events.html">Community Events</a></li>
+                        <li><a href="photos.html">Photo Gallery</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Lugogo Tennis Club, Kampala</li>
+                        <li><i class="fas fa-phone"></i> +256 783 562 222</li>
+                        <li><i class="fas fa-envelope"></i> usrasecretariat@gmail.com</li>
+                        <li><i class="fas fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Uganda Schools Rugby Association. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load scripts asynchronously for better performance -->
+    <script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="supabaseClient.js"></script>
+    <script defer src="script.js"></script>
+    
+    <script>
+        // Events page specific functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            }
+
+            // Timeline toggle functionality
+            const timelineBtns = document.querySelectorAll('.toggle-btn');
+            const eventsGrid = document.querySelector('.events-grid');
+            const eventCards = document.querySelectorAll('.event-card');
+
+            timelineBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all timeline buttons
+                    timelineBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+
+                    const timeline = this.getAttribute('data-timeline');
+                    
+                    // Show/hide events based on timeline
+                    eventCards.forEach(card => {
+                        const cardTimeline = card.getAttribute('data-timeline');
+                        let showCard = false;
+                        
+                        if (timeline === 'all') {
+                            showCard = true;
+                        } else if (timeline === 'upcoming') {
+                            // Show current and upcoming events
+                            showCard = cardTimeline === 'current' || cardTimeline === 'upcoming';
+                        } else {
+                            showCard = cardTimeline === timeline;
+                        }
+                        
+                        if (showCard) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.5s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Filter functionality (enhanced)
+            const filterTabs = document.querySelectorAll('.filter-tab');
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    const filter = this.getAttribute('data-filter');
+                    const activeTimeline = document.querySelector('.toggle-btn.active').getAttribute('data-timeline');
+
+                    // Filter event cards based on both category and timeline
+                    eventCards.forEach(card => {
+                        const category = card.getAttribute('data-category');
+                        const cardTimeline = card.getAttribute('data-timeline');
+                        
+                        const matchesFilter = filter === 'all' || category === filter;
+                        let matchesTimeline = false;
+                        
+                        if (activeTimeline === 'all') {
+                            matchesTimeline = true;
+                        } else if (activeTimeline === 'upcoming') {
+                            matchesTimeline = cardTimeline === 'current' || cardTimeline === 'upcoming';
+                        } else {
+                            matchesTimeline = cardTimeline === activeTimeline;
+                        }
+                        
+                        if (matchesFilter && matchesTimeline) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.5s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Countdown timer functionality
+            function updateCountdowns() {
+                const countdownTimers = document.querySelectorAll('.countdown-timer');
+                countdownTimers.forEach(timer => {
+                    const targetDate = new Date(timer.getAttribute('data-date'));
+                    const now = new Date();
+                    const diff = targetDate - now;
+
+                    if (diff > 0) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        
+                        const numberEl = timer.querySelector('.countdown-number');
+                        const labelEl = timer.querySelector('.countdown-label');
+                        
+                        if (days > 0) {
+                            numberEl.textContent = days;
+                            labelEl.textContent = days === 1 ? 'Day' : 'Days';
+                        } else {
+                            numberEl.textContent = hours;
+                            labelEl.textContent = hours === 1 ? 'Hour' : 'Hours';
+                        }
+                    } else {
+                        timer.style.display = 'none';
+                    }
+                });
+            }
+
+            // Update countdowns immediately and then every hour
+            updateCountdowns();
+            setInterval(updateCountdowns, 3600000); // Update every hour
+
+            // AGM Modal Functions
+            function openAGMModal() {
+                const modal = document.getElementById('agmModal');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeAGMModal() {
+                const modal = document.getElementById('agmModal');
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Download Functions
+            function downloadAGMForm() {
+                // Create a mock PDF download
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Registration_Form_2025.pdf';
+                link.click();
+                
+                // Show download notification
+                showDownloadNotification('AGM Registration Form downloaded successfully!');
+            }
+
+            function downloadAGMAgenda() {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Meeting_Agenda_2025.pdf';
+                link.click();
+                
+                showDownloadNotification('Meeting Agenda downloaded successfully!');
+            }
+
+            function downloadAGMGuidelines() {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Attendance_Guidelines_2025.pdf';
+                link.click();
+                
+                showDownloadNotification('Attendance Guidelines downloaded successfully!');
+            }
+
+            function showDownloadNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+                    z-index: 10000;
+                    font-weight: 600;
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Add CSS animations for notifications
+            const notificationStyles = document.createElement('style');
+            notificationStyles.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                @keyframes slideOutRight {
+                    from {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateX(100px);
+                    }
+                }
+            `;
+            document.head.appendChild(notificationStyles);
+
+            // Make functions globally available
+            window.openAGMModal = openAGMModal;
+            window.closeAGMModal = closeAGMModal;
+            window.downloadAGMForm = downloadAGMForm;
+            window.downloadAGMAgenda = downloadAGMAgenda;
+            window.downloadAGMGuidelines = downloadAGMGuidelines;
+
+            // Newsletter form
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('.newsletter-input').value;
+                    if (email) {
+                        alert('Thank you for subscribing! We\'ll keep you updated on rugby events.');
+                        this.querySelector('.newsletter-input').value = '';
+                    }
+                });
+            }
+
+            // Event card hover effects
+            eventCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // Add fadeIn animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

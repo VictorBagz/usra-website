@@ -1,1078 +1,915 @@
-// Initialize AOS (Animate On Scroll)
-AOS.init({
-    duration: 1000,
-    easing: 'ease-in-out',
-    once: true,
-    mirror: false
-});
+// USRA Website JavaScript - Professional & ESLint Compliant
 
-// Auth UI wiring - safely get elements
-const authBox = document.getElementById('authBox');
-const btnSignIn = document.getElementById('btnSignIn');
-const btnSignUp = document.getElementById('btnSignUp');
-const btnSignOut = document.getElementById('btnSignOut');
-const authForm = document.getElementById('authForm');
-const authStatus = document.getElementById('authStatus');
+/* eslint-env browser */
+/* global AOS, window, document, console, navigator, requestAnimationFrame, setTimeout, clearTimeout */
 
-function setAuthUI(state) {
-    if (!authBox) return;
-    if (state === 'signed-in') {
-        if (btnSignIn) btnSignIn.style.display = 'none';
-        if (btnSignUp) btnSignUp.style.display = 'none';
-        if (btnSignOut) btnSignOut.style.display = 'inline-block';
-        if (authStatus) authStatus.textContent = 'Signed in';
-    } else {
-        if (btnSignIn) btnSignIn.style.display = 'inline-block';
-        if (btnSignUp) btnSignUp.style.display = 'inline-block';
-        if (btnSignOut) btnSignOut.style.display = 'none';
-        if (authStatus) authStatus.textContent = '';
+'use strict';
+
+// Initialize AOS safely
+(function initAOS() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 1000,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
     }
-}
+})();
 
-async function refreshAuthVisibility() {
-    if (!window.USRA || !window.USRA.supabase) return;
-    const { data: { user } } = await USRA.supabase.auth.getUser();
-    if (authBox) authBox.style.display = 'block';
-    setAuthUI(user ? 'signed-in' : 'signed-out');
-}
+// Utility Functions
+const Utils = {
+    // Debounce function
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func.apply(this, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    },
 
-if (authForm && window.USRA && window.USRA.supabase) {
-    authForm.addEventListener('submit', async (e) => {
+    // Show notification
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 3000);
+    },
+
+    // Show loading overlay
+    showLoading() {
+        const loader = document.createElement('div');
+        loader.className = 'loading-overlay';
+        loader.innerHTML = '<div class="loading"></div>';
+        document.body.appendChild(loader);
+        
+        setTimeout(() => {
+            loader.classList.add('show');
+        }, 10);
+        
+        return loader;
+    },
+
+    // Hide loading overlay
+    hideLoading(loader) {
+        if (loader) {
+            loader.classList.remove('show');
+            setTimeout(() => {
+                if (loader.parentNode) {
+                    loader.remove();
+                }
+            }, 300);
+        }
+    }
+};
+
+// Auth Management
+const AuthManager = {
+    elements: {
+        authBox: document.getElementById('authBox'),
+        btnSignIn: document.getElementById('btnSignIn'),
+        btnSignUp: document.getElementById('btnSignUp'),
+        btnSignOut: document.getElementById('btnSignOut'),
+        authForm: document.getElementById('authForm'),
+        authStatus: document.getElementById('authStatus')
+    },
+
+    setUI(state) {
+        const { authBox, btnSignIn, btnSignUp, btnSignOut, authStatus } = this.elements;
+        
+        if (!authBox) return;
+        
+        if (state === 'signed-in') {
+            if (btnSignIn) btnSignIn.style.display = 'none';
+            if (btnSignUp) btnSignUp.style.display = 'none';
+            if (btnSignOut) btnSignOut.style.display = 'inline-block';
+            if (authStatus) authStatus.textContent = 'Signed in';
+        } else {
+            if (btnSignIn) btnSignIn.style.display = 'inline-block';
+            if (btnSignUp) btnSignUp.style.display = 'inline-block';
+            if (btnSignOut) btnSignOut.style.display = 'none';
+            if (authStatus) authStatus.textContent = '';
+        }
+    },
+
+    async refreshVisibility() {
+        if (!window.USRA || !window.USRA.supabase) return;
+        
+        try {
+            const { data: { user } } = await window.USRA.supabase.auth.getUser();
+            if (this.elements.authBox) this.elements.authBox.style.display = 'block';
+            this.setUI(user ? 'signed-in' : 'signed-out');
+        } catch (error) {
+            console.warn('Auth visibility check failed:', error);
+        }
+    },
+
+    init() {
+        const { authForm, btnSignUp, btnSignOut, authStatus } = this.elements;
+
+        if (authForm && window.USRA && window.USRA.supabase) {
+            authForm.addEventListener('submit', this.handleSignIn.bind(this));
+
+            if (btnSignUp) {
+                btnSignUp.addEventListener('click', this.handleSignUp.bind(this));
+            }
+
+            if (btnSignOut) {
+                btnSignOut.addEventListener('click', this.handleSignOut.bind(this));
+            }
+        }
+
+        // Listen to auth state changes
+        if (window.USRA && window.USRA.supabase) {
+            window.USRA.supabase.auth.onAuthStateChange((_event, session) => {
+                this.setUI(session?.user ? 'signed-in' : 'signed-out');
+            });
+        }
+
+        this.refreshVisibility();
+    },
+
+    async handleSignIn(e) {
         e.preventDefault();
+        
         const emailEl = document.getElementById('authEmail');
         const passwordEl = document.getElementById('authPassword');
+        const { btnSignIn, authStatus } = this.elements;
+        
         if (!emailEl || !passwordEl) return;
         
         const email = emailEl.value.trim();
         const password = passwordEl.value;
+        
         if (btnSignIn) {
-        btnSignIn.disabled = true;
-        btnSignIn.innerHTML = '<span class="loading"></span> Signing in...';
+            btnSignIn.disabled = true;
+            btnSignIn.innerHTML = '<span class="loading"></span> Signing in...';
         }
-        const { error } = await USRA.signInWithEmail(email, password);
-        if (btnSignIn) {
-        btnSignIn.disabled = false;
-        btnSignIn.textContent = 'Sign In';
-        }
-        if (error) {
-            if (authStatus) {
-            authStatus.textContent = error.message;
-            authStatus.style.color = '#FF0000';
-            }
-        } else {
-            if (authStatus) {
-            authStatus.textContent = 'Signed in successfully';
-            authStatus.style.color = '#4CAF50';
-            }
-            setAuthUI('signed-in');
-        }
-    });
-
-    if (btnSignUp) {
-    btnSignUp.addEventListener('click', async () => {
-            const emailEl = document.getElementById('authEmail');
-            const passwordEl = document.getElementById('authPassword');
-            if (!emailEl || !passwordEl) return;
+        
+        try {
+            const { error } = await window.USRA.signInWithEmail(email, password);
             
-            const email = emailEl.value.trim();
-            const password = passwordEl.value;
+            if (btnSignIn) {
+                btnSignIn.disabled = false;
+                btnSignIn.textContent = 'Sign In';
+            }
+            
+            if (error) {
+                if (authStatus) {
+                    authStatus.textContent = error.message;
+                    authStatus.style.color = '#FF0000';
+                }
+            } else {
+                if (authStatus) {
+                    authStatus.textContent = 'Signed in successfully';
+                    authStatus.style.color = '#4CAF50';
+                }
+                this.setUI('signed-in');
+            }
+        } catch (error) {
+            console.error('Sign in error:', error);
+            if (authStatus) {
+                authStatus.textContent = 'Sign in failed';
+                authStatus.style.color = '#FF0000';
+            }
+        }
+    },
+
+    async handleSignUp() {
+        const emailEl = document.getElementById('authEmail');
+        const passwordEl = document.getElementById('authPassword');
+        const { btnSignUp, authStatus } = this.elements;
+        
+        if (!emailEl || !passwordEl || !btnSignUp) return;
+        
+        const email = emailEl.value.trim();
+        const password = passwordEl.value;
+        
         btnSignUp.disabled = true;
         btnSignUp.innerHTML = '<span class="loading"></span> Creating...';
-        const { error } = await USRA.signUpWithEmail(email, password);
-        btnSignUp.disabled = false;
-        btnSignUp.textContent = 'Create Account';
-        if (error) {
+        
+        try {
+            const { error } = await window.USRA.signUpWithEmail(email, password);
+            
+            btnSignUp.disabled = false;
+            btnSignUp.textContent = 'Create Account';
+            
+            if (error) {
                 if (authStatus) {
-            authStatus.textContent = error.message;
-            authStatus.style.color = '#FF0000';
+                    authStatus.textContent = error.message;
+                    authStatus.style.color = '#FF0000';
                 }
-        } else {
+            } else {
                 if (authStatus) {
-            authStatus.textContent = 'Account created. Check your email to confirm.';
-            authStatus.style.color = '#4CAF50';
+                    authStatus.textContent = 'Account created. Check your email to confirm.';
+                    authStatus.style.color = '#4CAF50';
                 }
+            }
+        } catch (error) {
+            console.error('Sign up error:', error);
+            btnSignUp.disabled = false;
+            btnSignUp.textContent = 'Create Account';
         }
-    });
-    }
+    },
 
-    if (btnSignOut) {
-    btnSignOut.addEventListener('click', async () => {
-        await USRA.signOut();
-        setAuthUI('signed-out');
-    });
-    }
-}
-
-// Listen to auth state changes
-if (window.USRA && window.USRA.supabase) {
-    USRA.supabase.auth.onAuthStateChange((_event, session) => {
-        setAuthUI(session?.user ? 'signed-in' : 'signed-out');
-    });
-}
-
-refreshAuthVisibility();
-
-// Conditionally show Dashboard link for chair/admin users
-(async function showDashboardForAdmins(){
-    try {
-        if (!window.USRA || !USRA.supabase) return;
-        const navDash = document.getElementById('navDashboard');
-        if (!navDash) return;
-        const { data: { user } } = await USRA.supabase.auth.getUser();
-        if (!user) { navDash.style.display = 'none'; return; }
-        const { data: rows } = await USRA.supabase
-            .from('members')
-            .select('role')
-            .eq('user_id', user.id)
-            .limit(1);
-        const role = String(rows?.[0]?.role || '').toLowerCase();
-        if (role.startsWith('chair') || role.includes('admin')) {
-            navDash.style.display = 'list-item';
-        } else {
-            navDash.style.display = 'none';
-        }
-    } catch (e) {
-        console.warn('Dashboard role check failed:', e);
-    }
-})();
-
-// Mobile Navigation Toggle
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
-
-if (hamburger && navMenu) {
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
-});
-}
-
-// Mobile dropdown toggle
-const navMore = document.querySelector('.nav-more');
-if (navMore) {
-    navMore.addEventListener('click', (e) => {
-        // Only toggle on small screens
-        if (window.innerWidth <= 768) {
-            e.preventDefault();
-            navMore.classList.toggle('open');
-        }
-    });
-}
-
-// Close mobile menu when clicking on a link
-if (hamburger && navMenu) {
-document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-    hamburger.classList.remove('active');
-    navMenu.classList.remove('active');
-}));
-}
-
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Optimized navbar background change on scroll
-let navbarTicking = false;
-function updateNavbar() {
-    const navbar = document.querySelector('.navbar');
-    if (navbar) {
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(0, 0, 0, 0.95)';
-    } else {
-        navbar.style.background = 'rgba(0, 0, 0, 0.9)';
-    }
-    }
-    navbarTicking = false;
-}
-
-window.addEventListener('scroll', () => {
-    if (!navbarTicking) {
-        requestAnimationFrame(updateNavbar);
-        navbarTicking = true;
-    }
-}, { passive: true });
-
-// Counter Animation for Statistics
-function animateCounter(element, target, duration = 2000) {
-    let start = 0;
-    const increment = target / (duration / 16);
-    
-    function updateCounter() {
-        start += increment;
-        if (start < target) {
-            element.textContent = Math.floor(start);
-            requestAnimationFrame(updateCounter);
-        } else {
-            element.textContent = target;
+    async handleSignOut() {
+        try {
+            await window.USRA.signOut();
+            this.setUI('signed-out');
+        } catch (error) {
+            console.error('Sign out error:', error);
         }
     }
-    
-    updateCounter();
-}
-
-// Intersection Observer for counter animation
-const observerOptions = {
-    threshold: 0.5,
-    rootMargin: '0px 0px -100px 0px'
 };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const statNumber = entry.target.querySelector('.stat-number');
-            const target = parseInt(statNumber.getAttribute('data-target'));
-            animateCounter(statNumber, target);
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
+// Navigation Manager
+const NavigationManager = {
+    elements: {
+        hamburger: document.querySelector('.hamburger'),
+        navMenu: document.querySelector('.nav-menu'),
+        navMore: document.querySelector('.nav-more'),
+        navbar: document.querySelector('.navbar')
+    },
 
-// Observe all stat items
-document.querySelectorAll('.stat-item').forEach(item => {
-    observer.observe(item);
-});
+    init() {
+        this.setupMobileToggle();
+        this.setupDropdown();
+        this.setupSmoothScrolling();
+        this.setupNavbarScroll();
+        this.setupMobileMenuClose();
+    },
 
-// Form Handling (home registration form - guarded if missing)
-const homeRegistrationForm = document.getElementById('registrationForm');
-if (homeRegistrationForm) homeRegistrationForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    // Require auth
-    if (!window.USRA || !USRA.supabase) {
-        showNotification('Supabase not initialized', 'info');
-        return;
-    }
-
-    const { data: auth } = await USRA.supabase.auth.getUser();
-    if (!auth || !auth.user) {
-        showNotification('Please sign in as an administrator first.', 'info');
-        return;
-    }
-
-    // Get form data
-    const formData = new FormData(this);
-    const payload = Object.fromEntries(formData);
-
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
-    submitBtn.disabled = true;
-
-    try {
-        const { error } = await USRA.supabase.from('schools').insert({
-            name: payload.schoolName,
-            principal_name: payload.principalName,
-            email: payload.email,
-            phone: payload.phone,
-            address: payload.address,
-            estimated_players: payload.players ? Number(payload.players) : null,
-            notes: payload.message || null
-        });
-        if (error) throw error;
-        showNotification('Registration submitted successfully! We will contact you soon.', 'success');
-        this.reset();
-    } catch (err) {
-        showNotification(`Submission failed: ${err.message}`, 'info');
-    } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }
-});
-
-// Registration page: schoolRegistrationForm → insert school and member profile
-const schoolRegistrationForm = document.getElementById('schoolRegistrationForm');
-if (schoolRegistrationForm && window.USRA && USRA.supabase) {
-    schoolRegistrationForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
-        submitBtn.disabled = true;
-
-        const { data: { user } } = await USRA.supabase.auth.getUser();
-        if (!user) {
-            showNotification('Please sign in first to submit.', 'info');
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            return;
-        }
-
-        // Collect data
-        const fd = new FormData(this);
-
-        // Upload helpers to Supabase Storage
-        async function uploadToBucket(bucket, file, keyPrefix) {
-            if (!file || file.size === 0) return null;
-            const fileExt = file.name.split('.').pop();
-            const filePath = `${user.id}/${keyPrefix}-${Date.now()}.${fileExt}`;
-            const { error: upErr } = await USRA.supabase.storage.from(bucket).upload(filePath, file, { upsert: true });
-            if (upErr) throw upErr;
-            // Public URLs for public buckets; signed for private
-            if (bucket === 'supporting-docs') {
-                const { data: { signedUrl }, error: urlErr } = await USRA.supabase.storage
-                    .from(bucket)
-                    .createSignedUrl(filePath, 60 * 60 * 24 * 7); // 7 days
-                if (urlErr) throw urlErr;
-                return signedUrl;
-            } else {
-                const { data } = USRA.supabase.storage.from(bucket).getPublicUrl(filePath);
-                return data.publicUrl;
-            }
-        }
-
-        // Read files from form
-        const badgeFile = fd.get('schoolBadge');
-        const profileFile = fd.get('profilePhoto');
-        const docsFile = fd.get('supportingDocs');
-
-        let badgeUrl = null;
-        let profilePhotoUrl = null;
-        let docsUrl = null;
-
-        try {
-            // Upload files (if provided)
-            badgeUrl = await uploadToBucket('school-badges', badgeFile, 'badge');
-            profilePhotoUrl = await uploadToBucket('profile-photos', profileFile, 'profile');
-            docsUrl = await uploadToBucket('supporting-docs', docsFile, 'docs');
-
-            // Insert or upsert member profile
-            const memberPayload = {
-                user_id: user.id,
-                full_name: fd.get('adminFullName') || null,
-                nin: fd.get('nin') || null,
-                role: fd.get('role') || null,
-                sex: fd.get('sex') || null,
-                highest_qualification: fd.get('qualification') || null,
-                contact1: fd.get('contact1') || null,
-                contact2: fd.get('contact2') || null,
-                profile_photo_url: profilePhotoUrl,
-                supporting_docs_url: docsUrl
-            };
-
-            // upsert on user_id uniqueness
-            const { error: memberErr } = await USRA.supabase
-                .from('members')
-                .upsert(memberPayload, { onConflict: 'user_id' });
-            if (memberErr) throw memberErr;
-
-            // Insert school
-            const schoolPayload = {
-                name: fd.get('schoolName'),
-                principal_name: fd.get('adminFullName') || '',
-                email: fd.get('schoolEmail') || '',
-                phone: fd.get('schoolPhone1') || '',
-                address: fd.get('address') || '',
-                notes: null,
-                center_number: fd.get('centerNumber') || null,
-                school_email: fd.get('schoolEmail') || null,
-                contact1: fd.get('schoolPhone1') || null,
-                contact2: fd.get('schoolPhone2') || null,
-                region: fd.get('region') || null,
-                district: fd.get('district') || null,
-                badge_url: badgeUrl
-            };
-
-            const { error: schoolErr } = await USRA.supabase
-                .from('schools')
-                .insert(schoolPayload);
-            if (schoolErr) throw schoolErr;
-
-            showNotification('Registration submitted. Thank you!', 'success');
-            this.reset();
-        } catch (err) {
-            showNotification(`Submission failed: ${err.message}`, 'info');
-        } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-const contactForm = document.getElementById('contactForm');
-if (contactForm) contactForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-    const payload = Object.fromEntries(formData);
-
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.innerHTML = '<span class="loading"></span> Sending...';
-    submitBtn.disabled = true;
-
-    try {
-        if (window.USRA && USRA.supabase) {
-            const { error } = await USRA.supabase.from('contacts').insert({
-                name: payload.contactName,
-                email: payload.contactEmail,
-                subject: payload.contactSubject,
-                message: payload.contactMessage
+    setupMobileToggle() {
+        const { hamburger, navMenu } = this.elements;
+        
+        if (hamburger && navMenu) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
             });
-            if (error) throw error;
         }
-        showNotification('Message sent successfully! We will get back to you soon.', 'success');
-        this.reset();
-    } catch (err) {
-        showNotification(`Send failed: ${err.message}`, 'info');
-    } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }
-});
+    },
 
-// Newsletter form
-const newsletterForm = document.querySelector('.newsletter-form');
-if (newsletterForm) newsletterForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const email = this.querySelector('input[type="email"]').value;
-    if (email) {
-        showNotification('Thank you for subscribing to our newsletter!', 'success');
-        this.reset();
-    }
-});
-
-// Legacy notification function - replaced by enhanced version above
-// This is kept for backwards compatibility but redirects to the new function
-
-// Optimized parallax effect for hero section
-let parallaxTicking = false;
-function updateParallax() {
-    const scrolled = window.pageYOffset;
-    const heroBackground = document.querySelector('.hero-background');
-    if (heroBackground && scrolled < window.innerHeight) {
-        heroBackground.style.transform = `translateY(${scrolled * 0.3}px)`;
-    }
-    parallaxTicking = false;
-}
-
-window.addEventListener('scroll', () => {
-    if (!parallaxTicking) {
-        requestAnimationFrame(updateParallax);
-        parallaxTicking = true;
-    }
-}, { passive: true });
-
-// Add loading animation styles
-const style = document.createElement('style');
-style.textContent = `
-    .loading {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 8px;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .notification-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-    
-    .notification-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .notification-close:hover {
-        opacity: 0.8;
-    }
-`;
-document.head.appendChild(style);
-
-// Optimized scroll reveal animations
-const scrollRevealElements = document.querySelectorAll('.feature, .contact-item, .footer-section');
-
-const scrollRevealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-            // Stop observing once revealed for better performance
-            scrollRevealObserver.unobserve(entry.target);
-        }
-    });
-}, {
-    threshold: 0.2,
-    rootMargin: '0px 0px -30px 0px'
-});
-
-// Use will-change for better performance
-scrollRevealElements.forEach(element => {
-    element.style.opacity = '0';
-    element.style.transform = 'translateY(20px)';
-    element.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    element.style.willChange = 'opacity, transform';
-    scrollRevealObserver.observe(element);
-});
-
-// Initialize tooltips for better UX
-document.querySelectorAll('[title]').forEach(element => {
-    element.addEventListener('mouseenter', function(e) {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
-        tooltip.textContent = this.getAttribute('title');
-        tooltip.style.cssText = `
-            position: absolute;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            z-index: 1000;
-            pointer-events: none;
-            white-space: nowrap;
-        `;
+    setupDropdown() {
+        const { navMore } = this.elements;
         
-        document.body.appendChild(tooltip);
-        
-        const rect = this.getBoundingClientRect();
-        tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-        tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-        
-        this.tooltip = tooltip;
-    });
-    
-    element.addEventListener('mouseleave', function() {
-        if (this.tooltip) {
-            document.body.removeChild(this.tooltip);
-            this.tooltip = null;
-        }
-    });
-});
-
-console.log('USRA Website loaded successfully! 🏉');
-
-// Quick Win Improvements for Better UX
-
-// 1. Enhanced loading states function
-function showLoading(element, message = 'Loading...') {
-    if (!element) return;
-    const originalContent = element.innerHTML;
-    element.setAttribute('data-original-content', originalContent);
-    element.innerHTML = `<span class="loading"></span> ${message}`;
-    element.disabled = true;
-    return originalContent;
-}
-
-function hideLoading(element, originalContent = null) {
-    if (!element) return;
-    const content = originalContent || element.getAttribute('data-original-content');
-    if (content) {
-        element.innerHTML = content;
-        element.removeAttribute('data-original-content');
-    }
-    element.disabled = false;
-}
-
-// 2. Global error boundary for better UX - only for critical errors
-window.addEventListener('error', (e) => {
-    console.error('Global error:', e.error || e);
-    
-    // Only show notification for very specific critical errors
-    const errorMessage = e.error?.message || e.message || '';
-    const filename = e.filename || '';
-    
-    // Skip errors that are common and not user-actionable
-    const shouldSkip = errorMessage.includes('Cannot read propert') ||
-                       errorMessage.includes('null') ||
-                       errorMessage.includes('undefined') ||
-                       errorMessage.includes('Script error') ||
-                       filename.includes('extension') ||
-                       filename.includes('chrome-extension') ||
-                       errorMessage.includes('ResizeObserver') ||
-                       errorMessage.includes('Non-Error promise rejection');
-    
-    // Only show for severe network/fetch errors that users can act on
-    const isCriticalError = !shouldSkip && (
-        errorMessage.includes('Failed to fetch') ||
-        errorMessage.includes('NetworkError') ||
-        errorMessage.includes('ERR_INTERNET_DISCONNECTED')
-    );
-    
-    if (isCriticalError) {
-        showNotification('Network connection issue. Please check your internet connection.', 'error');
-    }
-});
-
-window.addEventListener('unhandledrejection', (e) => {
-    console.error('Unhandled promise rejection:', e.reason);
-    
-    // Only show notification for specific network/fetch related rejections that users can act on
-    const reason = e.reason?.message || e.reason || '';
-    const shouldShow = reason.includes('Failed to fetch') ||
-                       reason.includes('NetworkError') ||
-                       reason.includes('ERR_INTERNET_DISCONNECTED') ||
-                       (reason.includes('CORS') && !reason.includes('chrome-extension'));
-    
-    if (shouldShow) {
-        showNotification('Connection error. Please refresh the page and try again.', 'error');
-    }
-    e.preventDefault(); // Prevent the default console error
-});
-
-
-// 3. Auto-save functionality for forms
-function autoSave(formData, key, expiryMinutes = 30) {
-    try {
-        const data = {
-            formData: formData,
-            timestamp: Date.now(),
-            expiry: Date.now() + (expiryMinutes * 60 * 1000)
-        };
-        localStorage.setItem(`autosave_${key}`, JSON.stringify(data));
-    } catch (e) {
-        console.warn('Auto-save failed:', e);
-    }
-}
-
-function loadAutoSave(key) {
-    try {
-        const saved = localStorage.getItem(`autosave_${key}`);
-        if (!saved) return null;
-        
-        const data = JSON.parse(saved);
-        if (Date.now() > data.expiry) {
-            localStorage.removeItem(`autosave_${key}`);
-            return null;
-        }
-        return data.formData;
-    } catch (e) {
-        console.warn('Load auto-save failed:', e);
-        return null;
-    }
-}
-
-function clearAutoSave(key) {
-    try {
-        localStorage.removeItem(`autosave_${key}`);
-    } catch (e) {
-        console.warn('Clear auto-save failed:', e);
-    }
-}
-
-// 4. Enhanced notification system with different types
-function showNotification(message, type = 'info', duration = 5000) {
-    // Remove existing notifications of the same type
-    const existing = document.querySelectorAll(`.notification-${type}`);
-    existing.forEach(el => {
-        if (document.body.contains(el)) {
-            document.body.removeChild(el);
-        }
-    });
-
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    const icons = {
-        success: 'fas fa-check-circle',
-        error: 'fas fa-exclamation-circle',
-        warning: 'fas fa-exclamation-triangle',
-        info: 'fas fa-info-circle'
-    };
-    
-    const colors = {
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        info: '#3b82f6'
-    };
-    
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="${icons[type] || icons.info}"></i>
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        </div>
-    `;
-    
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${colors[type] || colors.info};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 350px;
-        font-family: inherit;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Close button functionality
-    const closeBtn = notification.querySelector('.notification-close');
-    const closeNotification = () => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    };
-    
-    closeBtn.addEventListener('click', closeNotification);
-    
-    // Auto remove
-    if (duration > 0) {
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                closeNotification();
-            }
-        }, duration);
-    }
-    
-    return notification;
-}
-
-// 5. Performance monitoring and optimization
-function measurePerformance(name, fn) {
-    return async function(...args) {
-        const start = performance.now();
-        try {
-            const result = await fn.apply(this, args);
-            const end = performance.now();
-            console.log(`${name} took ${(end - start).toFixed(2)}ms`);
-            return result;
-        } catch (error) {
-            const end = performance.now();
-            console.error(`${name} failed after ${(end - start).toFixed(2)}ms:`, error);
-            throw error;
-        }
-    };
-}
-
-// 7. Initialize auto-save for forms
-function initAutoSave() {
-    const forms = document.querySelectorAll('form[data-autosave]');
-    forms.forEach(form => {
-        const key = form.getAttribute('data-autosave') || 'default';
-        
-        // Load saved data on page load
-        const savedData = loadAutoSave(key);
-        if (savedData) {
-            const shouldRestore = confirm('Found unsaved form data. Would you like to restore it?');
-            if (shouldRestore) {
-                Object.keys(savedData).forEach(fieldName => {
-                    const field = form.querySelector(`[name="${fieldName}"]`);
-                    if (field && field.type !== 'file') {
-                        field.value = savedData[fieldName];
-                    }
-                });
-                showNotification('Form data restored from auto-save', 'success');
-            } else {
-                clearAutoSave(key);
-            }
-        }
-        
-        // Auto-save on input changes
-        form.addEventListener('input', debounce(() => {
-            const formData = new FormData(form);
-            const data = {};
-            for (let [key, value] of formData.entries()) {
-                if (form.querySelector(`[name="${key}"]`).type !== 'file') {
-                    data[key] = value;
+        if (navMore) {
+            navMore.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    navMore.classList.toggle('open');
                 }
-            }
-            autoSave(data, key);
-        }, 2000));
-        
-        // Clear auto-save on successful submit
-        form.addEventListener('submit', () => {
-            // Small delay to allow form processing
-            setTimeout(() => {
-                if (!form.querySelector('.error')) {
-                    clearAutoSave(key);
+            });
+        }
+    },
+
+    setupSmoothScrolling() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
-            }, 1000);
+            });
         });
-    });
-}
+    },
 
-// 8. Debounce utility for performance
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
+    setupNavbarScroll() {
+        let navbarTicking = false;
+        const { navbar } = this.elements;
+
+        const updateNavbar = () => {
+            if (navbar) {
+                if (window.scrollY > 100) {
+                    navbar.style.background = 'rgba(0, 0, 0, 0.95)';
+                } else {
+                    navbar.style.background = 'rgba(0, 0, 0, 0.9)';
+                }
+            }
+            navbarTicking = false;
         };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
 
-// 9. Initialize improvements when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Add network status indicator to navbar if it doesn't exist
-    const navbar = document.querySelector('.nav-container');
-    if (navbar && !document.getElementById('networkStatus')) {
-        const networkStatus = document.createElement('div');
-        networkStatus.id = 'networkStatus';
-        networkStatus.style.cssText = `
-            font-size: 0.8rem;
-            padding: 4px 8px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.1);
-            margin-left: 10px;
-        `;
-        navbar.appendChild(networkStatus);
-        updateNetworkStatus();
+        window.addEventListener('scroll', () => {
+            if (!navbarTicking) {
+                requestAnimationFrame(updateNavbar);
+                navbarTicking = true;
+            }
+        });
+    },
+
+    setupMobileMenuClose() {
+        const { hamburger, navMenu } = this.elements;
+        
+        if (hamburger && navMenu) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
     }
-    
-    // Initialize auto-save
-    initAutoSave();
-    
-    // Initialize download tracking
-    initDownloadTracking();
-    
-    // Initialize hero animations
-    initHeroAnimations();
-    
-    // Add retry functionality to failed requests
-    window.retryFailedRequest = function(requestFn, maxRetries = 3) {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
+};
+
+// Events Section Manager
+const EventsManager = {
+    elements: {
+        section: null,
+        navTabs: null,
+        eventCards: null,
+        navSlider: null
+    },
+
+    isAnimating: false,
+
+    init() {
+        this.elements.section = document.querySelector('.events-ultra');
+        if (!this.elements.section) return;
+
+        this.elements.navTabs = document.querySelectorAll('.nav-tab');
+        this.elements.eventCards = document.querySelectorAll('.event-card-premium, .event-featured');
+        this.elements.navSlider = document.querySelector('.nav-slider');
+
+        this.setupNavigation();
+        this.setupCardInteractions();
+        this.setupButtonRipples();
+        this.initializeDisplay();
+    },
+
+    setupNavigation() {
+        const { navTabs, navSlider } = this.elements;
+
+        if (!navTabs.length || !navSlider) return;
+
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', this.handleTabClick.bind(this));
+            tab.addEventListener('mouseenter', this.handleTabHover.bind(this));
+            tab.addEventListener('mouseleave', this.handleTabLeave.bind(this));
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', Utils.debounce(() => {
+            const activeTab = document.querySelector('.nav-tab.active');
+            if (activeTab) {
+                this.updateSliderPosition(activeTab, true);
+            }
+        }, 100));
+    },
+
+    handleTabClick(e) {
+        const tab = e.currentTarget;
+        
+        if (tab.classList.contains('active') || this.isAnimating) return;
+
+        // Remove active state from all tabs
+        this.elements.navTabs.forEach(t => {
+            t.classList.remove('active');
+            t.style.transform = 'scale(1)';
+        });
+
+        // Add active state to clicked tab
+        tab.classList.add('active');
+        tab.style.transform = 'scale(1.02)';
+        
+        this.updateSliderPosition(tab);
+        
+        const filter = tab.getAttribute('data-filter');
+        this.filterEvents(filter);
+
+        // Haptic feedback if supported
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    },
+
+    handleTabHover(e) {
+        const tab = e.currentTarget;
+        if (!tab.classList.contains('active')) {
+            tab.style.transform = 'scale(1.01)';
+        }
+    },
+
+    handleTabLeave(e) {
+        const tab = e.currentTarget;
+        if (!tab.classList.contains('active')) {
+            tab.style.transform = 'scale(1)';
+        }
+    },
+
+    updateSliderPosition(activeTab, instant = false) {
+        const { navSlider } = this.elements;
+        
+        if (!navSlider) return;
+        
+        const tabWidth = activeTab.offsetWidth;
+        const tabLeft = activeTab.offsetLeft;
+        
+        navSlider.style.transition = instant ? 'none' : 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        navSlider.style.transform = `translateX(${tabLeft}px)`;
+        navSlider.style.width = `${tabWidth}px`;
+    },
+
+    filterEvents(category) {
+        if (this.isAnimating) return;
+        
+        this.isAnimating = true;
+        const { eventCards } = this.elements;
+
+        // Hide all cards first
+        eventCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('hide');
+                card.classList.remove('show');
+            }, index * 50);
+        });
+
+        // Show matching cards after hide animation
+        setTimeout(() => {
+            let visibleIndex = 0;
+            eventCards.forEach((card) => {
+                const cardCategory = card.getAttribute('data-category');
+                const shouldShow = category === 'all' || cardCategory === category;
+                
+                if (shouldShow) {
+                    setTimeout(() => {
+                        card.classList.remove('hide');
+                        card.classList.add('show');
+                    }, visibleIndex * 100);
+                    visibleIndex++;
+                }
+            });
             
-            function attempt() {
-                attempts++;
-                requestFn()
-                    .then(resolve)
-                    .catch(error => {
-                        if (attempts < maxRetries) {
-                            setTimeout(attempt, 1000 * attempts); // Exponential backoff
-                        } else {
-                            reject(error);
+            setTimeout(() => {
+                this.isAnimating = false;
+            }, visibleIndex * 100 + 500);
+        }, eventCards.length * 50 + 200);
+
+        this.updateEventCounts();
+    },
+
+    updateEventCounts() {
+        const { navTabs, eventCards } = this.elements;
+
+        navTabs.forEach(tab => {
+            const category = tab.dataset.filter;
+            const countElement = tab.querySelector('.tab-count');
+            
+            if (countElement) {
+                if (category === 'all') {
+                    countElement.textContent = eventCards.length;
+                } else {
+                    const count = Array.from(eventCards).filter(card => 
+                        card.getAttribute('data-category') === category
+                    ).length;
+                    countElement.textContent = count;
+                }
+            }
+        });
+    },
+
+    setupCardInteractions() {
+        const { eventCards } = this.elements;
+
+        eventCards.forEach(card => {
+            let hoverTimeout;
+
+            card.addEventListener('mouseenter', function() {
+                clearTimeout(hoverTimeout);
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+                this.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                hoverTimeout = setTimeout(() => {
+                    this.style.transform = 'translateY(0) scale(1)';
+                }, 50);
+            });
+
+            // Touch support for mobile
+            card.addEventListener('touchstart', function() {
+                this.style.transform = 'translateY(-4px) scale(1.01)';
+            });
+
+            card.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.transform = 'translateY(0) scale(1)';
+                }, 150);
+            });
+        });
+    },
+
+    setupButtonRipples() {
+        const buttons = document.querySelectorAll('.btn-premium, .btn-card, .btn-cta');
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.remove();
+                    }
+                }, 600);
+            });
+        });
+    },
+
+    initializeDisplay() {
+        const { navTabs, eventCards } = this.elements;
+
+        // Initialize slider position
+        const activeTab = document.querySelector('.nav-tab.active');
+        if (activeTab) {
+            this.updateSliderPosition(activeTab, true);
+            this.updateEventCounts();
+        }
+
+        // Show all events initially with staggered animation
+        setTimeout(() => {
+            eventCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('show');
+                }, index * 150);
+            });
+        }, 500);
+    }
+};
+
+// Statistics Animation Manager
+const StatsManager = {
+    init() {
+        this.setupObserver();
+    },
+
+    animateStats() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        
+        statNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'));
+            let start = 0;
+            const increment = target / (2000 / 16);
+            
+            const updateCount = () => {
+                start += increment;
+                if (start < target) {
+                    stat.textContent = Math.floor(start);
+                    requestAnimationFrame(updateCount);
+                } else {
+                    stat.textContent = target;
+                }
+            };
+            
+            updateCount();
+        });
+    },
+
+    setupObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumber = entry.target.querySelector('.stat-number');
+                    if (statNumber && !statNumber.classList.contains('animated')) {
+                        statNumber.classList.add('animated');
+                        this.animateStats();
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.stat-item').forEach(item => {
+            observer.observe(item);
+        });
+    }
+};
+
+// Form Handler
+const FormManager = {
+    init() {
+        this.setupRegistrationForm();
+    },
+
+    setupRegistrationForm() {
+        const form = document.getElementById('registrationForm');
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!window.USRA || !window.USRA.supabase) {
+                Utils.showNotification('Supabase not initialized', 'info');
+                return;
+            }
+
+            try {
+                const { data: auth } = await window.USRA.supabase.auth.getUser();
+                if (!auth || !auth.user) {
+                    Utils.showNotification('Please sign in as an administrator first.', 'info');
+                    return;
+                }
+
+                const formData = new FormData(this);
+                const payload = Object.fromEntries(formData);
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
+                submitBtn.disabled = true;
+
+                const { error } = await window.USRA.supabase.from('schools').insert({
+                    name: payload.schoolName,
+                    principal_name: payload.principalName,
+                    email: payload.email,
+                    phone: payload.phone,
+                    address: payload.address,
+                    estimated_players: payload.players ? Number(payload.players) : null,
+                    notes: payload.message || null
+                });
+                
+                if (error) throw error;
+                
+                Utils.showNotification('Registration submitted successfully!', 'success');
+                this.reset();
+                
+            } catch (err) {
+                Utils.showNotification(`Submission failed: ${err.message}`, 'info');
+            } finally {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'Register School';
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+    }
+};
+
+// Dashboard Role Check
+const DashboardManager = {
+    async init() {
+        try {
+            if (!window.USRA || !window.USRA.supabase) return;
+            
+            const navDash = document.getElementById('navDashboard');
+            if (!navDash) return;
+            
+            const { data: { user } } = await window.USRA.supabase.auth.getUser();
+            if (!user) { 
+                navDash.style.display = 'none'; 
+                return; 
+            }
+            
+            const { data: rows } = await window.USRA.supabase
+                .from('members')
+                .select('role')
+                .eq('user_id', user.id)
+                .limit(1);
+                
+            const role = String(rows?.[0]?.role || '').toLowerCase();
+            if (role.startsWith('chair') || role.includes('admin')) {
+                navDash.style.display = 'list-item';
+            } else {
+                navDash.style.display = 'none';
+            }
+        } catch (error) {
+            console.warn('Dashboard role check failed:', error);
+        }
+    }
+};
+
+// Lightbox Manager
+const LightboxManager = {
+    init() {
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        if (!galleryItems.length) return;
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCaption = document.getElementById('lightboxCaption');
+        const lightboxClose = document.getElementById('lightboxClose');
+        const lightboxPrev = document.getElementById('lightboxPrev');
+        const lightboxNext = document.getElementById('lightboxNext');
+
+        if (!lightbox || !lightboxImage) return;
+
+        let currentIndex = 0;
+        const items = Array.from(galleryItems);
+
+        const openLightbox = (index) => {
+            currentIndex = index;
+            const item = items[currentIndex];
+            const imgSrc = item.getAttribute('href');
+            const caption = item.getAttribute('data-title') || '';
+
+            lightboxImage.src = imgSrc;
+            if (lightboxCaption) lightboxCaption.textContent = caption;
+            
+            lightbox.style.display = 'flex';
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeLightbox = () => {
+            lightbox.style.display = 'none';
+            lightbox.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        };
+
+        const showNext = () => {
+            currentIndex = (currentIndex + 1) % items.length;
+            openLightbox(currentIndex);
+        };
+
+        const showPrev = () => {
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            openLightbox(currentIndex);
+        };
+
+        // Event listeners
+        galleryItems.forEach((item, index) => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                openLightbox(index);
+            });
+        });
+
+        if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+        if (lightboxNext) lightboxNext.addEventListener('click', showNext);
+        if (lightboxPrev) lightboxPrev.addEventListener('click', showPrev);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (lightbox.style.display === 'flex') {
+                switch (e.key) {
+                    case 'Escape':
+                        closeLightbox();
+                        break;
+                    case 'ArrowRight':
+                        showNext();
+                        break;
+                    case 'ArrowLeft':
+                        showPrev();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        // Close on background click
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+    }
+};
+
+// Add Ripple CSS Animation
+(function addRippleStyles() {
+    if (document.querySelector('#ripple-styles')) return;
+    
+    const style = document.createElement('style');
+    style.id = 'ripple-styles';
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// Initialize Everything
+document.addEventListener('DOMContentLoaded', function() {
+    AuthManager.init();
+    // Navbar JS from provided spec
+    EventsManager.init();
+    StatsManager.init();
+    FormManager.init();
+    DashboardManager.init();
+    LightboxManager.init();
+
+    // Enhance navbar to mirror provided behavior
+    (function providedNavbarJS(){
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const body = document.body;
+        if (hamburger && mobileMenu) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                mobileMenu.classList.toggle('open');
+                body.classList.toggle('menu-open');
+
+                const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+                hamburger.setAttribute('aria-expanded', (!isExpanded).toString());
+            });
+        }
+
+        const dropdownButtons = document.querySelectorAll('.dropdown-mobile button');
+        dropdownButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownContent = button.nextElementSibling;
+                const icon = button.querySelector('i');
+
+                if (dropdownContent) dropdownContent.classList.toggle('hidden');
+
+                if (icon) {
+                    if (dropdownContent && dropdownContent.classList.contains('hidden')) {
+                        icon.setAttribute('data-feather', 'chevron-down');
+                    } else {
+                        icon.setAttribute('data-feather', 'chevron-up');
+                    }
+                    if (window.feather && typeof window.feather.replace === 'function') {
+                        window.feather.replace();
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (!targetId || targetId === '#') return;
+                const targetElement = document.querySelector(targetId);
+                if (!targetElement) return;
+                e.preventDefault();
+                if (mobileMenu && mobileMenu.classList.contains('open')) {
+                    hamburger?.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    document.body.classList.remove('menu-open');
+                    hamburger?.setAttribute('aria-expanded', 'false');
+                }
+                window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY;
+            document.querySelectorAll('section').forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${sectionId}` || 
+                            (sectionId === 'index' && link.getAttribute('href') === 'index.html')) {
+                            link.classList.add('active');
                         }
                     });
-            }
-            
-            attempt();
+                }
+            });
         });
-    };
+    })();
 });
 
-// 6. Download tracking and user feedback
-function initDownloadTracking() {
-    const downloadLinks = document.querySelectorAll('a[download]');
-    downloadLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const fileName = this.getAttribute('download');
-            const fileType = fileName.split('.').pop().toUpperCase();
-            
-            // Show download notification
-            showNotification(`Downloading ${fileType} file: ${fileName}`, 'info', 3000);
-            
-            // Track download in console for analytics
-            console.log(`Download initiated: ${fileName} from ${this.href}`);
-            
-            // Optional: Send download tracking to analytics
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'download', {
-                    'file_name': fileName,
-                    'file_type': fileType
-                });
-            }
-        });
-        
-        // Add download indicator on hover
-        link.addEventListener('mouseenter', function() {
-            const fileName = this.getAttribute('download');
-            this.setAttribute('title', `Download ${fileName}`);
-        });
-    });
-}
-
-// 11. Hero animations and effects
-function initHeroAnimations() {
-    const heroBackground = document.querySelector('.hero-background');
-    const heroContent = document.querySelector('.hero-content');
-    
-    if (!heroBackground || !heroContent) return;
-    
-    // Parallax scroll effect
-    let ticking = false;
-    function updateHeroParallax() {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        const opacity = Math.max(0, 1 - scrolled / window.innerHeight);
-        
-        if (heroBackground) {
-            heroBackground.style.transform = `
-                scale(1.1) 
-                translateX(-5%) 
-                translateY(calc(-5% + ${rate}px))
-            `;
-            heroBackground.style.opacity = opacity;
-        }
-        
-        if (heroContent) {
-            heroContent.style.transform = `translateY(${rate * 0.3}px)`;
-            heroContent.style.opacity = opacity;
-        }
-        
-        ticking = false;
-    }
-    
-    function requestHeroTick() {
-        if (!ticking) {
-            requestAnimationFrame(updateHeroParallax);
-            ticking = true;
-        }
-    }
-    
-    // Mouse movement parallax effect
-    function handleMouseMove(e) {
-        if (window.innerWidth < 768) return; // Disable on mobile
-        
-        const { clientX, clientY } = e;
-        const { innerWidth, innerHeight } = window;
-        
-        const xPercent = (clientX / innerWidth) * 100;
-        const yPercent = (clientY / innerHeight) * 100;
-        
-        const moveX = (xPercent - 50) * 0.1;
-        const moveY = (yPercent - 50) * 0.1;
-        
-        if (heroBackground && window.pageYOffset < window.innerHeight) {
-            heroBackground.style.transform = `
-                scale(1.1) 
-                translateX(calc(-5% + ${moveX}px)) 
-                translateY(calc(-5% + ${moveY}px))
-            `;
-        }
-    }
-    
-    // Intersection Observer for hero visibility
-    const heroObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                heroBackground.style.animationPlayState = 'running';
-                document.addEventListener('mousemove', handleMouseMove);
-                window.addEventListener('scroll', requestHeroTick, { passive: true });
-            } else {
-                heroBackground.style.animationPlayState = 'paused';
-                document.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('scroll', requestHeroTick);
-            }
-        });
-    }, { threshold: 0.1 });
-    
-    heroObserver.observe(document.querySelector('.hero'));
-    
-    // Performance optimization: pause animations when tab is not visible
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            heroBackground.style.animationPlayState = 'paused';
-        } else {
-            heroBackground.style.animationPlayState = 'running';
-        }
-    });
-    
-    // Add resize handler to recalculate positions
-    window.addEventListener('resize', debounce(() => {
-        // Reset transform on resize
-        if (heroBackground) {
-            heroBackground.style.transform = 'scale(1.1) translateX(-5%) translateY(-5%)';
-        }
-    }, 250));
-}
-
-// 8. Expose utilities globally for use in other scripts
-window.USRAUtils = {
-    showLoading,
-    hideLoading,
-    showNotification,
-    autoSave,
-    loadAutoSave,
-    clearAutoSave,
-    measurePerformance,
-    debounce,
-    retryFailedRequest: window.retryFailedRequest,
-    initDownloadTracking,
-    initHeroAnimations
-};
-
-// Gallery Lightbox
-(function initLightbox(){
-    const items = Array.from(document.querySelectorAll('.gallery-item'));
-    if (!items.length) return;
-    const lightbox = document.getElementById('lightbox');
-    const img = document.getElementById('lightboxImage');
-    const caption = document.getElementById('lightboxCaption');
-    const btnClose = document.getElementById('lightboxClose');
-    const btnPrev = document.getElementById('lightboxPrev');
-    const btnNext = document.getElementById('lightboxNext');
-    let current = 0;
-
-    function openAt(index){
-        current = index;
-        const link = items[current];
-        img.src = link.getAttribute('href');
-        img.alt = link.querySelector('img')?.alt || 'Photo';
-        caption.textContent = link.dataset.title || '';
-        lightbox.classList.add('open');
-        lightbox.setAttribute('aria-hidden','false');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function close(){
-        lightbox.classList.remove('open');
-        lightbox.setAttribute('aria-hidden','true');
-        document.body.style.overflow = '';
-    }
-
-    function prev(){ openAt((current - 1 + items.length) % items.length); }
-    function next(){ openAt((current + 1) % items.length); }
-
-    items.forEach((el, i) => {
-        el.addEventListener('click', (e) => { e.preventDefault(); openAt(i); });
-    });
-    btnClose?.addEventListener('click', close);
-    btnPrev?.addEventListener('click', prev);
-    btnNext?.addEventListener('click', next);
-    lightbox?.addEventListener('click', (e) => { if (e.target === lightbox) close(); });
-    document.addEventListener('keydown', (e) => {
-        if (!lightbox.classList.contains('open')) return;
-        if (e.key === 'Escape') close();
-        if (e.key === 'ArrowLeft') prev();
-        if (e.key === 'ArrowRight') next();
-    });
-})();
+// Export for global access
+window.USRAUtils = Utils;

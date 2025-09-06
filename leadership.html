@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary-red: #dc2626;
@@ -32,44 +33,11 @@
             background: var(--light-gray);
         }
 
-        /* Navigation */
+        /* Navigation - Using global styles from styles.css */
+        /* Custom navigation overrides for leadership page */
         .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 80px;
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: var(--primary-red);
-        }
-
-        .nav-logo img {
-            height: 40px;
-            width: auto;
-        }
-
-        .nav-logo span {
-            font-size: 1.5rem;
-            font-weight: 800;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
         }
 
         .back-link {
@@ -297,6 +265,16 @@
             display: block;
         }
 
+        /* Adjust layout for cards without photos */
+        .member-card:not(:has(.member-photo)) .member-title {
+            margin-top: 0;
+        }
+
+        /* Alternative for browsers that don't support :has() */
+        .member-card .member-title:first-child {
+            margin-top: 0;
+        }
+
         .member-title {
             color: var(--secondary-yellow);
             font-weight: 700;
@@ -450,17 +428,35 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Simple & Professional Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="nav-logo">
                 <img src="photos/usraLogo.png" alt="USRA Logo">
                 <span>USRA</span>
             </a>
-            <a href="index.html" class="back-link">
-                <i class="fas fa-home"></i>
-                Back to Home
-            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="events.html" class="nav-link">Events</a></li>
+                <li><a href="registration.html" class="nav-link">Register</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li class="nav-more">
+                    <a href="#" class="nav-link active">More ↓</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="workplan.html">Workplan 2025</a></li>
+                        <li><a href="medical-fund.html">Medical Fund</a></li>
+                        <li><a href="photos.html">Photos</a></li>
+                    </ul>
+                </li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
         </div>
     </nav>
 
@@ -603,6 +599,429 @@
                 </div>
             </div>
 
+            <!-- Finance Committee -->
+            <div id="finance" class="content-section">
+                <h2 class="section-title" data-aos="fade-up">Finance Committee Members</h2>
+                <div class="committee-grid">
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="member-title">Chairperson</div>
+                        <div class="member-name">Sewaya Ismail</div>
+                        <div class="member-school">Kira College Butiki</div>
+                        <div class="member-region">Eastern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:sewayamiti77@gmail.com">sewayamiti77@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256774416871">+256 774 416 871</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                        <div class="member-title">Secretary</div>
+                        <div class="member-name">Seguya Wilfred Bakaluba</div>
+                        <div class="member-school">Hana International</div>
+                        <div class="member-region">Central Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:wilfredsseguya@gmail.com">wilfredsseguya@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256788378660">+256 788 378 660</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Okello Dickson</div>
+                        <div class="member-school">Makerere College School</div>
+                        <div class="member-region">Central Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:okellodsn@gmail.com">okellodsn@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256783562222">+256 783 562 222</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Kigenyi Patrick Paul</div>
+                        <div class="member-school">Mbarara High School</div>
+                        <div class="member-region">Western Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:mukyapat@gmail.com">mukyapat@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256775728516">+256 775 728 516</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Ochakachon Robert</div>
+                        <div class="member-school">Sir Samuel Baker School Gulu</div>
+                        <div class="member-region">Northern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:ochakachonrobert@gmail.com">ochakachonrobert@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256779758887">+256 779 758 887</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Committee -->
+            <div id="technical" class="content-section">
+                <h2 class="section-title" data-aos="fade-up">Technical Committee Members</h2>
+                <div class="committee-grid">
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="member-title">Chairperson</div>
+                        <div class="member-name">Matsiko Vian</div>
+                        <div class="member-school">TBA</div>
+                        <div class="member-region">TBA</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> Contact details pending
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                        <div class="member-title">Secretary</div>
+                        <div class="member-name">Molo Robson</div>
+                        <div class="member-school">Inomo S.S</div>
+                        <div class="member-region">Northern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:robsonmolo@gmail.com">robsonmolo@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256773346360">+256 773 346 360</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Barasa Moses</div>
+                        <div class="member-school">Busoga College Mwiri</div>
+                        <div class="member-region">Eastern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:barasamoses295@gmail.com">barasamoses295@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256772614568">+256 772 614 568</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Wati Richard</div>
+                        <div class="member-school">London College of St. Lawrence Maya</div>
+                        <div class="member-region">Central Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:watirichard3@gmail.com">watirichard3@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256766026974">+256 766 026 974</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Ochakachon Robert</div>
+                        <div class="member-school">Sir Samuel Baker School Gulu</div>
+                        <div class="member-region">Northern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:ochakachonrobert@gmail.com">ochakachonrobert@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256779758887">+256 779 758 887</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="350">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Kigenyi Patrick Paul</div>
+                        <div class="member-school">Mbarara High School</div>
+                        <div class="member-region">Western Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:mukyapat@gmail.com">mukyapat@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256775728516">+256 775 728 516</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="400">
+                        <div class="member-title">Member</div>
+                        <div class="member-name">Seguya Wilfred Bakaluba</div>
+                        <div class="member-school">Hana International</div>
+                        <div class="member-region">Central Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:wilfredsseguya@gmail.com">wilfredsseguya@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256788378660">+256 788 378 660</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disciplinary Committee -->
+            <div id="disciplinary" class="content-section">
+                <h2 class="section-title" data-aos="fade-up">Disciplinary Committee Members</h2>
+                <div class="committee-grid">
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="member-title">Secretary</div>
+                        <div class="member-name">Faridah Kayegi</div>
+                        <div class="member-school">Oxford High School Mbale</div>
+                        <div class="member-region">Eastern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:kayeridah1@gmail.com">kayeridah1@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256786082927">+256 786 082 927</a>
+                        </div>
+                    </div>
+                    
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                        <div class="member-title">Additional Members</div>
+                        <div class="member-name">To Be Appointed</div>
+                        <div class="member-school">Various Schools</div>
+                        <div class="member-region">All Regions</div>
+                        <div class="member-contact">
+                            <i class="fas fa-info-circle"></i> Positions to be filled
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regional Committees -->
+            <div id="regional" class="content-section">
+                <h2 class="section-title" data-aos="fade-up">Regional Committee Members</h2>
+                
+                <!-- Central Region -->
+                <div class="regional-section" data-aos="fade-up">
+                    <h3 class="regional-title">Central Region Committee</h3>
+                    <div class="committee-grid">
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member-title">Chairperson</div>
+                            <div class="member-name">Wati Richard</div>
+                            <div class="member-school">London College of St. Lawrence Maya</div>
+                            <div class="member-region">Central Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:watirichard3@gmail.com">watirichard3@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256766026974">+256 766 026 974</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="member-title">Entebbe Zone</div>
+                            <div class="member-name">Adong Zelindae Harriet</div>
+                            <div class="member-school">Boston High School Mpala</div>
+                            <div class="member-region">Central Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:zelindaharriets@gmail.com">zelindaharriets@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256770726467">+256 770 726 467</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="member-title">Muko Zone</div>
+                            <div class="member-name">Erisa Mwesigwa</div>
+                            <div class="member-school">Mpunge Seed School</div>
+                            <div class="member-region">Central Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:Erisamwesigwa.em@gmail.com">Erisamwesigwa.em@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256701722736">+256 701 722 736</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Western Region -->
+                <div class="regional-section" data-aos="fade-up">
+                    <h3 class="regional-title">Western Region Committee</h3>
+                    <div class="committee-grid">
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member-title">Ankole Zone</div>
+                            <div class="member-name">Kigenyi Patrick Paul</div>
+                            <div class="member-school">Mbarara High School</div>
+                            <div class="member-region">Western Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:mukyapat@gmail.com">mukyapat@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256775728516">+256 775 728 516</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="member-title">Rwenzori Zone</div>
+                            <div class="member-name">Hannington Rugumayo</div>
+                            <div class="member-school">Nyakasura School</div>
+                            <div class="member-region">Western Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:hanningtonjames31@gmail.com">hanningtonjames31@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256785291931">+256 785 291 931</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="member-title">Masaka Zone</div>
+                            <div class="member-name">Kafeero Yusufu</div>
+                            <div class="member-school">Kijjabwemi S.S</div>
+                            <div class="member-region">Western Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:yusufukafeero3@gmail.com">yusufukafeero3@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256755369747">+256 755 369 747</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="member-title">Kigezi Zone</div>
+                            <div class="member-name">Atuheirirwe Charlotte</div>
+                            <div class="member-school">Kigezi High School</div>
+                            <div class="member-region">Western Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:acharlotte2013@gmail.com">acharlotte2013@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256785957535">+256 785 957 535</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Northern Region -->
+                <div class="regional-section" data-aos="fade-up">
+                    <h3 class="regional-title">Northern Region Committee</h3>
+                    <div class="committee-grid">
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member-title">West Acholi</div>
+                            <div class="member-name">Ochakachon Robert</div>
+                            <div class="member-school">Sir Samuel Baker School</div>
+                            <div class="member-region">Northern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:ochakachonrobert@gmail.com">ochakachonrobert@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256779758887">+256 779 758 887</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="member-title">East Acholi</div>
+                            <div class="member-name">Olanya Thomas</div>
+                            <div class="member-school">Kitgum Comprehensive College</div>
+                            <div class="member-region">Northern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:olanyathomas5@gmail.com">olanyathomas5@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256762180188">+256 762 180 188</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="member-title">Lango Zone</div>
+                            <div class="member-name">Okot Jaspher</div>
+                            <div class="member-school">Dr. Obote College Boroboro</div>
+                            <div class="member-region">Northern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:okotjaspher123@gmail.com">okotjaspher123@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256782876832">+256 782 876 832</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="member-title">West Nile Zone</div>
+                            <div class="member-name">Bayo Hamid</div>
+                            <div class="member-school">St. Augustine S.S</div>
+                            <div class="member-region">Northern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:bayohamid80@gmail.com">bayohamid80@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256778938578">+256 778 938 578</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eastern Region -->
+                <div class="regional-section" data-aos="fade-up">
+                    <h3 class="regional-title">Eastern Region Committee</h3>
+                    <div class="committee-grid">
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                            <div class="member-title">Busoga Zone</div>
+                            <div class="member-name">Barasa Moses</div>
+                            <div class="member-school">Busoga College Mwiri</div>
+                            <div class="member-region">Eastern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:barasamoses295@gmail.com">barasamoses295@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256772614568">+256 772 614 568</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                            <div class="member-title">Bukedi Zone</div>
+                            <div class="member-name">Ochola Samuel</div>
+                            <div class="member-school">Great Aubrey Memorial</div>
+                            <div class="member-region">Eastern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-phone"></i> <a href="tel:+256706066806">+256 706 066 806</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                            <div class="member-title">Malwa Bugisu Zone</div>
+                            <div class="member-name">Ethel Musabi</div>
+                            <div class="member-school">Nabumali High School</div>
+                            <div class="member-region">Eastern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-envelope"></i> <a href="mailto:emnamusabi@gmail.com">emnamusabi@gmail.com</a><br>
+                                <i class="fas fa-phone"></i> <a href="tel:+256702904183">+256 702 904 183</a>
+                            </div>
+                        </div>
+
+                        <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                            <div class="member-title">Teso Zone</div>
+                            <div class="member-name">Mutyaba Vincent</div>
+                            <div class="member-school">St. Michael S.S-Amen</div>
+                            <div class="member-region">Eastern Region</div>
+                            <div class="member-contact">
+                                <i class="fas fa-phone"></i> <a href="tel:+256700487831">+256 700 487 831</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Girls' Rugby Committee -->
+            <div id="girls" class="content-section">
+                <h2 class="section-title" data-aos="fade-up">Girls' Rugby Committee Members</h2>
+                <div class="committee-grid">
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="member-title">Chairperson</div>
+                        <div class="member-name">Ms. Kayegi Faridah</div>
+                        <div class="member-school">Oxford High School Mbale</div>
+                        <div class="member-region">Eastern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:kayeridah1@gmail.com">kayeridah1@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256786082927">+256 786 082 927</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="150">
+                        <div class="member-title">Secretary</div>
+                        <div class="member-name">Mr. Molo Robson</div>
+                        <div class="member-school">Inomo S.S</div>
+                        <div class="member-region">Northern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:robsonmolo@gmail.com">robsonmolo@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256773346360">+256 773 346 360</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="member-title">Western Region Member</div>
+                        <div class="member-name">Mr. Kafeero Yusuf</div>
+                        <div class="member-school">Kijjabwemi S.S</div>
+                        <div class="member-region">Western Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:yusufukafeero3@gmail.com">yusufukafeero3@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256755369747">+256 755 369 747</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="250">
+                        <div class="member-title">Central Region Member</div>
+                        <div class="member-name">Ms. Zerinda Adong Harriet</div>
+                        <div class="member-school">Boston High School Mpala</div>
+                        <div class="member-region">Central Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:zelindaharriets@gmail.com">zelindaharriets@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256770726467">+256 770 726 467</a>
+                        </div>
+                    </div>
+
+                    <div class="member-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="member-title">Eastern Region Member</div>
+                        <div class="member-name">Ms. Ethel Malwa</div>
+                        <div class="member-school">Nabumali High School</div>
+                        <div class="member-region">Eastern Region</div>
+                        <div class="member-contact">
+                            <i class="fas fa-envelope"></i> <a href="mailto:emnamusabi@gmail.com">emnamusabi@gmail.com</a><br>
+                            <i class="fas fa-phone"></i> <a href="tel:+256702904183">+256 702 904 183</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Footer Information -->
             <div class="footer-info" data-aos="fade-up">
                 <h3>USRA Secretariat Contact Information</h3>
@@ -619,6 +1038,7 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script>
     <script>
         // Initialize AOS
         AOS.init({

@@ -3,37 +3,620 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>USRA | Workplan 2025</title>
+    <title>USRA Workplan 2025 - Uganda Schools Rugby Association</title>
+    
+    <!-- CSS -->
 	<link rel="stylesheet" href="styles.css">
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        /* Workplan Page Specific Styles */
+        :root {
+            --primary-red: #dc2626;
+            --dark-red: #b91c1c;
+            --secondary-yellow: #fbbf24;
+            --dark-yellow: #f59e0b;
+            --white: #ffffff;
+            --light-gray: #f8fafc;
+            --dark-gray: #1f2937;
+            --text-dark: #374151;
+        }
+
+        /* Hero Section */
+        .workplan-hero {
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--dark-red) 50%, #7f1d1d 100%);
+            color: white;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .workplan-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            opacity: 0.6;
+        }
+
+        /* Timeline Design */
+        .timeline-container {
+            position: relative;
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--light-gray) 0%, #ffffff 100%);
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary-red), var(--secondary-yellow), var(--primary-red));
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.1);
+            width: calc(50% - 40px);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.15);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-red), var(--secondary-yellow));
+            border-radius: 20px 20px 0 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary-red), var(--dark-red));
+            border-radius: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+            z-index: 10;
+        }
+
+        .timeline-date {
+            background: linear-gradient(45deg, var(--secondary-yellow), var(--dark-yellow));
+            color: var(--dark-gray);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .activity-title {
+            color: var(--primary-red);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .activity-details {
+            margin-bottom: 20px;
+        }
+
+        .activity-item {
+            background: var(--light-gray);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-red);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(220, 38, 38, 0.05);
+            transform: translateX(5px);
+        }
+
+        .activity-item strong {
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+        .responsible-person {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .responsible-person i {
+            margin-right: 8px;
+            color: var(--secondary-yellow);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(135deg, var(--dark-gray) 0%, #111827 100%);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 40px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--secondary-yellow);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-item {
+                flex-direction: column !important;
+                margin-left: 60px;
+            }
+
+            .timeline-content {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .timeline-marker {
+                left: 30px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .workplan-hero {
+                padding: 100px 0 60px;
+                min-height: 50vh;
+            }
+
+            .activity-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Simple & Professional Navigation -->
 	<nav class="navbar">
 		<div class="nav-container">
-			<div class="nav-logo">
+            <a href="index.html" class="nav-logo">
 				<img src="photos/usraLogo.png" alt="USRA Logo">
-				<span>Uganda Schools' Rugby Association</span>
+                <span>USRA</span>
+            </a>
+					<ul class="nav-menu">
+			<li><a href="index.html" class="nav-link">Home</a></li>
+			<li><a href="events.html" class="nav-link">Events</a></li>
+			<li><a href="registration.html" class="nav-link">Register</a></li>
+			<li><a href="index.html#about" class="nav-link">About</a></li>
+			<li class="nav-more">
+                    <a href="#" class="nav-link active">More ↓</a>
+				<ul class="dropdown-menu">
+					<li><a href="leadership.html">Leadership</a></li>
+                        <li><a href="workplan.html">Workplan 2025</a></li>
+                        <li><a href="medical-fund.html">Medical Fund</a></li>
+                        <li><a href="photos.html">Photos</a></li>
+				</ul>
+			</li>
+			<li><a href="index.html#contact" class="nav-link">Contact</a></li>
+			<li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+		</ul>
+			<div class="hamburger">
+				<span class="bar"></span>
+				<span class="bar"></span>
+				<span class="bar"></span>
 			</div>
-			<ul class="nav-menu">
-				<li><a href="index.html#home" class="nav-link">Home</a></li>
-				<li><a href="index.html#about" class="nav-link">About</a></li>
-				<li><a href="index.html#contact" class="nav-link">Contact</a></li>
-			</ul>
-			<div class="hamburger"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
 		</div>
 	</nav>
-	<section class="hero" style="height: 35vh; margin-top: 90px;">
-		<div class="hero-background" style="background-image:url('photos/pi1 (20) (1).jpg');"></div>
-		<div class="hero-overlay"></div>
-		<div class="hero-content"><div class="hero-text"><h1>Workplan 2025</h1><p>Key events and calendar</p></div></div>
+
+    <!-- Hero Section -->
+    <section class="workplan-hero">
+        <div class="container">
+            <div class="text-center" style="position: relative; z-index: 2;" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    USRA Workplan 2025
+                </h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto mb-8" style="opacity: 0.95; line-height: 1.7;">
+                    Uganda Schools Rugby Association - Affiliate Member, Uganda Rugby Union (URU)<br>
+                    <strong>Comprehensive Activity Calendar for 2025</strong>
+                </p>
+                <div class="mt-8" data-aos="fade-up" data-aos-delay="200">
+                    <a href="#timeline" class="btn btn-primary" style="padding: 16px 32px; font-size: 1.1rem; border-radius: 50px; background: linear-gradient(45deg, #fff, #f8f9fa); color: #dc2626; font-weight: 700; box-shadow: 0 8px 25px rgba(255,255,255,0.3); transition: all 0.4s ease;">
+                        View Activity Calendar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12" data-aos="fade-up">2025 at a Glance</h2>
+            <div class="stats-grid">
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Major Activities</div>
+                </div>
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Regional Leagues</div>
+                </div>
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">National Events</div>
+                </div>
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">Regions Covered</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section id="timeline" class="timeline-container">
+        <div class="container">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-16" style="color: var(--primary-red);" data-aos="fade-up">
+                2025 Activity Calendar
+            </h2>
+            
+            <div class="timeline">
+                <!-- Activity 1: EXCOM Annual Planning Meeting -->
+                <div class="timeline-item" data-aos="fade-up">
+                    <div class="timeline-marker">1</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">January 15, 2025</div>
+                        <h3 class="activity-title">EXCOM Annual Planning Meeting</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-users"></i>
+                            Responsible Body: EXCOM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 2: Ball Game One Qualifiers -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="100">
+                    <div class="timeline-marker">2</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">February 23 - April 6, 2025</div>
+                        <h3 class="activity-title">Ball Game One Qualifiers</h3>
+                        <div class="activity-details">
+                            <div class="activity-item">
+                                <strong>Central Schools Main League:</strong> Feb 23 - Mar 30
+                            </div>
+                            <div class="activity-item">
+                                <strong>Central Schools Second Division League:</strong> Mar 2 - Mar 30
+                            </div>
+                            <div class="activity-item">
+                                <strong>Central Schools Girls' League:</strong> Mar 2 - Mar 30
+                            </div>
+                            <div class="activity-item">
+                                <strong>Eastern Region Schools League:</strong> Mar 2 - Apr 6
+                            </div>
+                            <div class="activity-item">
+                                <strong>Eastern Region Schools Girls' League:</strong> Mar 2 - Apr 6
+                            </div>
+                            <div class="activity-item">
+                                <strong>Western Region Schools' League:</strong> Mar 2 - Apr 6
+                            </div>
+                            <div class="activity-item">
+                                <strong>Western Region Schools Girls' League:</strong> Mar 2 - Apr 6
+                            </div>
+                            <div class="activity-item">
+                                <strong>Northern Region Schools' League:</strong> Mar 2 - Apr 6
+                            </div>
+                            <div class="activity-item">
+                                <strong>Northern Region Schools Girls' League:</strong> Mar 2 - Apr 6
+                            </div>
+                        </div>
+                        <div class="responsible-person">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Regional Coordination Committees & RDOs
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 3: Regional Evaluation Meetings -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="200">
+                    <div class="timeline-marker">3</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">April 6 - 13, 2025</div>
+                        <h3 class="activity-title">Regional Ball Game One Qualifiers Evaluation Meetings</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-users"></i>
+                            Responsible: Regional Representatives
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 4: Ball Game One Evaluation Meeting -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="300">
+                    <div class="timeline-marker">4</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">April 19, 2025</div>
+                        <h3 class="activity-title">Ball Games One Evaluation and Ball Game One Qualifiers Planning Meeting</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-users"></i>
+                            Responsible Body: EXCOM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 5: USSSA National Ball Game One -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="400">
+                    <div class="timeline-marker">5</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">May 4 - 14, 2025</div>
+                        <h3 class="activity-title">USSSA National Ball Game One</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-trophy"></i>
+                            Participants: Qualified Schools
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 6: Ball Game Two Qualifiers -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="500">
+                    <div class="timeline-marker">6</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">June 8 - 29, 2025</div>
+                        <h3 class="activity-title">Ball Game Two Qualifiers</h3>
+                        <div class="activity-details">
+                            <div class="activity-item">
+                                <strong>Central Schools Kabaka Coronation 7s</strong> (Boys and Girls)
+                            </div>
+                            <div class="activity-item">
+                                <strong>Western Schools 7s</strong> (Boys and Girls)
+                            </div>
+                            <div class="activity-item">
+                                <strong>Eastern Schools Kyabazinga 7s</strong> (Boys and Girls)
+                            </div>
+                            <div class="activity-item">
+                                <strong>Lango Schools Won Nyaci 7s</strong> (Boys and Girls)
+                            </div>
+                            <div class="activity-item">
+                                <strong>Acholi Schools Rwot Adwong 7s</strong> (Boys and Girls)
+                            </div>
+                        </div>
+                        <div class="responsible-person">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Regional Coordination Committees & RDOs
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 7: Ball Game Two Evaluation -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="600">
+                    <div class="timeline-marker">7</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">July 5, 2025</div>
+                        <h3 class="activity-title">Ball Game Two Qualifiers Evaluation and AGM Planning Meeting</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-users"></i>
+                            Responsible Body: EXCOM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 8: USSSA National Ball Game Two -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="700">
+                    <div class="timeline-marker">8</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">July 9 - 18, 2025</div>
+                        <h3 class="activity-title">USSSA National Ball Game Two</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-trophy"></i>
+                            Participants: Qualified Schools
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 9: FEASSA Games -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="800">
+                    <div class="timeline-marker">9</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">August 19 - 27, 2025</div>
+                        <h3 class="activity-title">FEASSA Games</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-globe-africa"></i>
+                            Participants: Qualified Schools
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 10: Annual General Meeting -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="900">
+                    <div class="timeline-marker">10</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">September 6, 2025</div>
+                        <h3 class="activity-title">Annual General Meeting</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-users"></i>
+                            Responsible Body: EXCOM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 11: Independence Cup -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="1000">
+                    <div class="timeline-marker">11</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">October 9, 2025</div>
+                        <h3 class="activity-title">Independence Cup</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-flag"></i>
+                            Responsible: All Regional Representatives
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity 12: Abu Dhabi World Schools Festival -->
+                <div class="timeline-item" data-aos="fade-up" data-aos-delay="1100">
+                    <div class="timeline-marker">12</div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">December 14 - 20, 2025</div>
+                        <h3 class="activity-title">Abu Dhabi World Schools Festival</h3>
+                        <div class="responsible-person">
+                            <i class="fas fa-globe"></i>
+                            Participants: National Schools U20 Select, URU, EXCOM
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</section>
-	<section class="registration" style="padding-top: 60px;">
+
+    <!-- Contact Section -->
+    <section class="stats-section">
 		<div class="container">
-			<div class="section-header"><h2>Coming Soon</h2><p>The detailed 2025 events calendar will be published here.</p></div>
+            <div class="text-center" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Contact USRA Secretariat</h2>
+                <div class="text-lg mb-8">
+                    <p><strong>Address:</strong> Lugogo Tennis Club, Lugogo Bypass</p>
+                    <p>P.O. Box 22108, Kampala, Uganda</p>
+                    <p><strong>Chairman:</strong> <a href="tel:+256783562222" style="color: var(--secondary-yellow);">+256 783 562 222</a></p>
+                    <p><strong>General Secretary:</strong> <a href="tel:+256788378660" style="color: var(--secondary-yellow);">+256 788 378 660</a></p>
+                    <p><strong>Email:</strong> <a href="mailto:usrasecretariat@gmail.com" style="color: var(--secondary-yellow);">usrasecretariat@gmail.com</a></p>
+                    <p><strong>X (Twitter):</strong> <a href="https://x.com/USRA_Official1" target="_blank" style="color: var(--secondary-yellow);">@USRA_Official1</a></p>
+                </div>
+            </div>
 		</div>
 	</section>
-	<footer class="footer"><div class="container"><div class="footer-bottom"><p>&copy; 2024 Uganda Schools Rugby Association. All rights reserved.</p></div></div></footer>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
+                        <span>Uganda Schools Rugby Association</span>
+                    </div>
+                    <p>Developing the future of rugby in Uganda through school sports excellence.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <div class="contact-info">
+                        <p><i class="fas fa-map-marker-alt"></i> Lugogo Tennis Club, Kampala</p>
+                        <p><i class="fas fa-phone"></i> +256 783 562 222</p>
+                        <p><i class="fas fa-envelope"></i> usrasecretariat@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Uganda Schools Rugby Association. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 	<script src="script.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+    </script>
 </body>
 </html>
