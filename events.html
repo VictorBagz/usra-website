@@ -817,7 +817,7 @@
         .btn-primary i {
             margin-right: 8px;
         }
-
+        
         @media (max-width: 768px) {
             .events-grid {
                 grid-template-columns: 1fr;
@@ -974,8 +974,8 @@
 
             <!-- Filter Tabs -->
             <div class="filter-tabs mb-12" data-aos="fade-up">
-                <button class="filter-tab active" data-filter="all">All Events</button>
-                <button class="filter-tab" data-filter="tournaments">Tournaments</button>
+                    <button class="filter-tab active" data-filter="all">All Events</button>
+                    <button class="filter-tab" data-filter="tournaments">Tournaments</button>
                 <button class="filter-tab" data-filter="meetings">Meetings</button>
                 <button class="filter-tab" data-filter="national">National Games</button>
                 <button class="filter-tab" data-filter="international">International</button>
@@ -1005,8 +1005,8 @@
                             Annual general meeting to review the year's achievements and plan for the future.
                         </p>
                         <button class="event-btn" onclick="openAGMModal()">More Details</button>
-                    </div>
                 </div>
+            </div>
 
                 <!-- Next Event: Independence Cup (Oct 9) -->
                 <div class="event-card" data-category="tournaments" data-timeline="upcoming" data-aos="fade-up" data-aos-delay="100">
@@ -1531,6 +1531,70 @@
     <script>
         // Events page specific functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // WORKING HAMBURGER MENU FIX - Priority Code
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+            const body = document.body;
+            
+            console.log('Hamburger element:', hamburger); // Debug
+            console.log('Nav menu element:', navMenu); // Debug
+            
+            if (hamburger && navMenu) {
+                // Add click event to hamburger
+                hamburger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Hamburger clicked!'); // Debug
+                    
+                    // Toggle active classes
+                    hamburger.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                    body.classList.toggle('menu-open');
+                    
+                    // Update aria attribute
+                    const isExpanded = hamburger.classList.contains('active');
+                    hamburger.setAttribute('aria-expanded', isExpanded.toString());
+                    
+                    console.log('Menu is now:', isExpanded ? 'open' : 'closed'); // Debug
+                });
+                
+                // Close menu when clicking nav links
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        hamburger.classList.remove('active');
+                        navMenu.classList.remove('active');
+                        body.classList.remove('menu-open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+                        hamburger.classList.remove('active');
+                        navMenu.classList.remove('active');
+                        body.classList.remove('menu-open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                
+                // Close menu on window resize
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        hamburger.classList.remove('active');
+                        navMenu.classList.remove('active');
+                        body.classList.remove('menu-open');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                
+                console.log('Hamburger menu initialized successfully!'); // Debug
+            } else {
+                console.error('Hamburger or nav menu not found!'); // Debug
+            }
+            
             // Initialize AOS
             if (typeof AOS !== 'undefined') {
                 AOS.init({

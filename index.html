@@ -24,38 +24,54 @@
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- Simple & Professional Navigation -->
-    <nav class="navbar">
+  <header class="site-header">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">
+            <!-- Logo Section -->
+            <a href="#home" class="nav-logo">
                 <img src="photos/usraLogo.png" alt="USRA Logo">
-                <span>USRA</span>
+                <div class="nav-logo-text">
+                    <span class="main-title">Uganda Schools Rugby Association</span>
+                </div>
             </a>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active">Home</a></li>
-                <li><a href="events.html" class="nav-link">Events</a></li>
-                <li><a href="registration.html" class="nav-link">Register</a></li>
-                <li><a href="index.html#about" class="nav-link">About</a></li>
-                <li class="nav-more">
-                    <a href="#" class="nav-link">More ↓</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="leadership.html">Leadership</a></li>
-                        <li><a href="workplan.html">Workplan 2025</a></li>
-                        <li><a href="medical-fund.html">Medical Fund</a></li>
-                        <li><a href="photos.html">Photos</a></li>
-                    </ul>
-                </li>
-                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
-                <li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-            </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </div>
-    </nav>
 
+            <!-- Desktop Navigation -->
+            <nav class="desktop-nav">
+                <ul class="nav-links">
+                    <li><a href="#home" class="nav-link active">Home</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#chairman" class="nav-link">Chairman</a></li>
+                    <li><a href="#statistics" class="nav-link">Statistics</a></li>
+                    <li><a href="#gallery" class="nav-link">Gallery</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+                <a href="registration.html" class="nav-cta">
+                    <i class="fas fa-user-plus"></i> Register Now
+                </a>
+            </nav>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="menu-toggle" aria-label="Toggle mobile menu">
+                <div class="menu-toggle-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu">
+        <a href="#home" class="mobile-link">Home</a>
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#chairman" class="mobile-link">Chairman</a>
+        <a href="#statistics" class="mobile-link">Statistics</a>
+        <a href="#gallery" class="mobile-link">Gallery</a>
+        <a href="#contact" class="mobile-link">Contact</a>
+        <a href="registration.html" class="mobile-cta">
+            <i class="fas fa-user-plus"></i> Register Now
+        </a>
+    </div>
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-background">
@@ -566,5 +582,496 @@ We strongly believe that rugby, a fast growing sports in schools, is not just a 
     <script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script defer src="supabaseClient.js"></script>
     <script defer src="script.js"></script>
+    <script>
+        // CLEAN MOBILE NAVIGATION - Fully Styled
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Clean Navigation Loading...');
+
+            // Get elements
+            const menuToggle = document.querySelector('.menu-toggle');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+            const body = document.body;
+            const siteHeader = document.querySelector('.site-header');
+
+            // Check if elements exist
+            if (!menuToggle || !mobileMenu) {
+                console.error('❌ Navigation elements not found');
+                return;
+            }
+
+            console.log('✅ Navigation elements found and styled');
+
+            // Simple toggle function
+            function toggleMenu() {
+                const isOpen = mobileMenu.classList.contains('open');
+                
+                if (isOpen) {
+                    // Close menu
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                    console.log('📱 Menu closed');
+                } else {
+                    // Open menu
+                    menuToggle.classList.add('active');
+                    mobileMenu.classList.add('open');
+                    body.classList.add('menu-open');
+                    console.log('📱 Menu opened');
+                }
+            }
+
+            // Menu button click
+            menuToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMenu();
+            });
+
+            // Close menu when clicking mobile links
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                    console.log('🔗 Menu closed via link click');
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    if (mobileMenu.classList.contains('open')) {
+                        menuToggle.classList.remove('active');
+                        mobileMenu.classList.remove('open');
+                        body.classList.remove('menu-open');
+                        console.log('🎯 Menu closed via outside click');
+                    }
+                }
+            });
+
+            // Close menu on window resize to desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && mobileMenu.classList.contains('open')) {
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                    console.log('📏 Menu closed via resize');
+                }
+            });
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    siteHeader.classList.add('scrolled');
+                } else {
+                    siteHeader.classList.remove('scrolled');
+                }
+            });
+
+            console.log('✅ Clean Navigation Initialized Successfully with Styling!');
+
+            // Initialize AOS
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            }
+
+            // Timeline toggle functionality
+            const timelineBtns = document.querySelectorAll('.toggle-btn');
+            const eventsGrid = document.querySelector('.events-grid');
+            const eventCards = document.querySelectorAll('.event-card');
+
+            timelineBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all timeline buttons
+                    timelineBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+
+                    const timeline = this.getAttribute('data-timeline');
+                    
+                    // Show/hide events based on timeline
+                    eventCards.forEach(card => {
+                        const cardTimeline = card.getAttribute('data-timeline');
+                        let showCard = false;
+                        
+                        if (timeline === 'all') {
+                            showCard = true;
+                        } else if (timeline === 'upcoming') {
+                            // Show current and upcoming events
+                            showCard = cardTimeline === 'current' || cardTimeline === 'upcoming';
+                        } else {
+                            showCard = cardTimeline === timeline;
+                        }
+                        
+                        if (showCard) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.5s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Filter functionality (enhanced)
+            const filterTabs = document.querySelectorAll('.filter-tab');
+
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    const filter = this.getAttribute('data-filter');
+                    const activeTimeline = document.querySelector('.toggle-btn.active').getAttribute('data-timeline');
+
+                    // Filter event cards based on both category and timeline
+                    eventCards.forEach(card => {
+                        const category = card.getAttribute('data-category');
+                        const cardTimeline = card.getAttribute('data-timeline');
+                        
+                        const matchesFilter = filter === 'all' || category === filter;
+                        let matchesTimeline = false;
+                        
+                        if (activeTimeline === 'all') {
+                            matchesTimeline = true;
+                        } else if (activeTimeline === 'upcoming') {
+                            matchesTimeline = cardTimeline === 'current' || cardTimeline === 'upcoming';
+                        } else {
+                            matchesTimeline = cardTimeline === activeTimeline;
+                        }
+                        
+                        if (matchesFilter && matchesTimeline) {
+                            card.style.display = 'block';
+                            card.style.animation = 'fadeIn 0.5s ease-in-out';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Countdown timer functionality
+            function updateCountdowns() {
+                const countdownTimers = document.querySelectorAll('.countdown-timer');
+                countdownTimers.forEach(timer => {
+                    const targetDate = new Date(timer.getAttribute('data-date'));
+                    const now = new Date();
+                    const diff = targetDate - now;
+
+                    if (diff > 0) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        
+                        const numberEl = timer.querySelector('.countdown-number');
+                        const labelEl = timer.querySelector('.countdown-label');
+                        
+                        if (days > 0) {
+                            numberEl.textContent = days;
+                            labelEl.textContent = days === 1 ? 'Day' : 'Days';
+                        } else {
+                            numberEl.textContent = hours;
+                            labelEl.textContent = hours === 1 ? 'Hour' : 'Hours';
+                        }
+                    } else {
+                        timer.style.display = 'none';
+                    }
+                });
+            }
+
+            // Update countdowns immediately and then every hour
+            updateCountdowns();
+            setInterval(updateCountdowns, 3600000); // Update every hour
+
+            // AGM Modal Functions
+            function openAGMModal() {
+                const modal = document.getElementById('agmModal');
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeAGMModal() {
+                const modal = document.getElementById('agmModal');
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Download Functions
+            function downloadAGMForm() {
+                // Create a mock PDF download
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Registration_Form_2025.pdf';
+                link.click();
+                
+                // Show download notification
+                showDownloadNotification('AGM Registration Form downloaded successfully!');
+            }
+
+            function downloadAGMAgenda() {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Meeting_Agenda_2025.pdf';
+                link.click();
+                
+                showDownloadNotification('Meeting Agenda downloaded successfully!');
+            }
+
+            function downloadAGMGuidelines() {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKEFHTS...'; // Mock PDF data
+                link.download = 'USRA_AGM_Attendance_Guidelines_2025.pdf';
+                link.click();
+                
+                showDownloadNotification('Attendance Guidelines downloaded successfully!');
+            }
+
+            function showDownloadNotification(message) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+                    z-index: 10000;
+                    font-weight: 600;
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Add CSS animations for notifications
+            const notificationStyles = document.createElement('style');
+            notificationStyles.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
+                @keyframes slideOutRight {
+                    from {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateX(100px);
+                    }
+                }
+            `;
+            document.head.appendChild(notificationStyles);
+
+            // Make functions globally available
+            window.openAGMModal = openAGMModal;
+            window.closeAGMModal = closeAGMModal;
+            window.downloadAGMForm = downloadAGMForm;
+            window.downloadAGMAgenda = downloadAGMAgenda;
+            window.downloadAGMGuidelines = downloadAGMGuidelines;
+
+            // Newsletter form
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('.newsletter-input').value;
+                    if (email) {
+                        alert('Thank you for subscribing! We\'ll keep you updated on rugby events.');
+                        this.querySelector('.newsletter-input').value = '';
+                    }
+                });
+            }
+
+            // Event card hover effects
+            eventCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // Add fadeIn animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        //additional script
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements
+            const menuToggle = document.querySelector('.menu-toggle');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const mobileLinks = document.querySelectorAll('.mobile-link, .mobile-cta');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const siteHeader = document.querySelector('.site-header');
+            const body = document.body;
+
+            // Mobile menu toggle
+            function toggleMenu() {
+                const isOpen = mobileMenu.classList.contains('open');
+                
+                if (isOpen) {
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                } else {
+                    menuToggle.classList.add('active');
+                    mobileMenu.classList.add('open');
+                    body.classList.add('menu-open');
+                }
+            }
+
+            // Menu button click
+            menuToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMenu();
+            });
+
+            // Close menu when clicking mobile links
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    if (mobileMenu.classList.contains('open')) {
+                        menuToggle.classList.remove('active');
+                        mobileMenu.classList.remove('open');
+                        body.classList.remove('menu-open');
+                    }
+                }
+            });
+
+            // Close menu on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && mobileMenu.classList.contains('open')) {
+                    menuToggle.classList.remove('active');
+                    mobileMenu.classList.remove('open');
+                    body.classList.remove('menu-open');
+                }
+            });
+
+            // Scroll effect for header
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    siteHeader.classList.add('scrolled');
+                } else {
+                    siteHeader.classList.remove('scrolled');
+                }
+            });
+
+            // Active link handling (for demo purposes)
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                });
+            });
+
+            // Smooth hover effects for nav links
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.letterSpacing = '0.5px';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    this.style.letterSpacing = '0';
+                });
+            });
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link, .mobile-cta');
+    const body = document.body;
+
+    // Hamburger click toggles mobile menu
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        menuToggle.classList.toggle('active');
+        mobileMenu.classList.toggle('open');
+        body.classList.toggle('menu-open');
+    });
+
+    // Close menu when clicking mobile links
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            menuToggle.classList.remove('active');
+            mobileMenu.classList.remove('open');
+            body.classList.remove('menu-open');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+            if (mobileMenu.classList.contains('open')) {
+                menuToggle.classList.remove('active');
+                mobileMenu.classList.remove('open');
+                body.classList.remove('menu-open');
+            }
+        }
+    });
+
+    // Close menu on window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && mobileMenu.classList.contains('open')) {
+            menuToggle.classList.remove('active');
+            mobileMenu.classList.remove('open');
+            body.classList.remove('menu-open');
+        }
+    });
+});
+</script>
 </body>
 </html>
