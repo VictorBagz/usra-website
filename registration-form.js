@@ -1,7 +1,13 @@
-// Registration Form Multi-Step Functionality
+// Registration Form Multi-Step Functionality - Enhanced version now in script.js
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('schoolRegistrationForm');
     if (!form) return;
+    
+    // Check if new RegistrationSystem is already handling this form
+    if (window.RegistrationSystem) {
+        console.log('Enhanced RegistrationSystem is active');
+        return; // Let the new system handle everything
+    }
 
     const steps = document.querySelectorAll('.form-step');
     const progressSteps = document.querySelectorAll('.progress-step');
@@ -79,6 +85,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                 } else if (field.type === 'tel' && !isValidPhone(field.value)) {
                     showFieldError(field, 'Please enter a valid phone number');
+                    isValid = false;
+                } else if (field.type === 'password' && field.value.length < 6) {
+                    showFieldError(field, 'Password must be at least 6 characters long');
                     isValid = false;
                 }
             }
@@ -265,32 +274,89 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Form submission enhancement
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Enhanced form validation only - submission handled by script.js
+    // Note: Removing this event listener to prevent conflicts with script.js
+    // All validation will be handled in script.js for better control
+
+    // Password strength and visibility functionality
+    const adminPasswordField = document.getElementById('adminPassword');
+    const passwordStrengthDiv = document.getElementById('passwordStrength');
+    
+    if (adminPasswordField && passwordStrengthDiv) {
+        adminPasswordField.addEventListener('input', function() {
+            const password = this.value;
+            updatePasswordStrength(password);
+        });
+
+        adminPasswordField.addEventListener('focus', function() {
+            passwordStrengthDiv.style.display = 'block';
+        });
+    }
+
+    function updatePasswordStrength(password) {
+        const strengthFill = document.querySelector('.strength-fill');
+        const strengthText = document.querySelector('.strength-text');
         
-        // Validate terms acceptance
-        if (!termsCheckbox?.checked) {
-            alert('Please accept the terms and conditions to proceed.');
-            return;
+        if (!strengthFill || !strengthText) return;
+
+        let strength = 0;
+        let strengthLabel = 'Very Weak';
+        let color = '#ff4757';
+
+        if (password.length >= 6) strength += 1;
+        if (password.length >= 8) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/[0-9]/.test(password)) strength += 1;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+        switch (strength) {
+            case 0:
+            case 1:
+                strengthLabel = 'Very Weak';
+                color = '#ff4757';
+                break;
+            case 2:
+                strengthLabel = 'Weak';
+                color = '#ff7675';
+                break;
+            case 3:
+                strengthLabel = 'Fair';
+                color = '#fdcb6e';
+                break;
+            case 4:
+                strengthLabel = 'Good';
+                color = '#6c5ce7';
+                break;
+            case 5:
+                strengthLabel = 'Strong';
+                color = '#00b894';
+                break;
         }
 
-        // Show loading state
-        const submitBtn = document.querySelector('.submit-form');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-        submitBtn.disabled = true;
-
-        // Simulate submission delay and then proceed with normal form submission
-        setTimeout(() => {
-            // Reset button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-            
-            // The actual form submission will be handled by the existing script.js
-            // Just trigger the original form submission logic here if needed
-        }, 1000);
-    });
+        const percentage = (strength / 5) * 100;
+        strengthFill.style.width = percentage + '%';
+        strengthFill.style.backgroundColor = color;
+        strengthText.textContent = `Password strength: ${strengthLabel}`;
+        strengthText.style.color = color;
+    }
 
     console.log('Registration form enhanced with multi-step functionality! 🎉');
 });
+
+// Global function for password toggle
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const passwordIcon = document.getElementById(fieldId + 'Icon');
+    
+    if (passwordField && passwordIcon) {
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+        }
+    }
+}

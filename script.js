@@ -90,24 +90,27 @@ const AuthManager = {
         authBox: document.getElementById('authBox'),
         btnSignIn: document.getElementById('btnSignIn'),
         btnSignUp: document.getElementById('btnSignUp'),
+        btnAnonymous: document.getElementById('btnAnonymous'),
         btnSignOut: document.getElementById('btnSignOut'),
         authForm: document.getElementById('authForm'),
         authStatus: document.getElementById('authStatus')
     },
 
     setUI(state) {
-        const { authBox, btnSignIn, btnSignUp, btnSignOut, authStatus } = this.elements;
+        const { authBox, btnSignIn, btnSignUp, btnAnonymous, btnSignOut, authStatus } = this.elements;
         
         if (!authBox) return;
         
         if (state === 'signed-in') {
             if (btnSignIn) btnSignIn.style.display = 'none';
             if (btnSignUp) btnSignUp.style.display = 'none';
+            if (btnAnonymous) btnAnonymous.style.display = 'none';
             if (btnSignOut) btnSignOut.style.display = 'inline-block';
             if (authStatus) authStatus.textContent = 'Signed in';
         } else {
             if (btnSignIn) btnSignIn.style.display = 'inline-block';
             if (btnSignUp) btnSignUp.style.display = 'inline-block';
+            if (btnAnonymous) btnAnonymous.style.display = 'inline-block';
             if (btnSignOut) btnSignOut.style.display = 'none';
             if (authStatus) authStatus.textContent = '';
         }
@@ -126,13 +129,17 @@ const AuthManager = {
     },
 
     init() {
-        const { authForm, btnSignUp, btnSignOut, authStatus } = this.elements;
+        const { authForm, btnSignUp, btnAnonymous, btnSignOut, authStatus } = this.elements;
 
         if (authForm && window.USRA && window.USRA.supabase) {
             authForm.addEventListener('submit', this.handleSignIn.bind(this));
 
             if (btnSignUp) {
                 btnSignUp.addEventListener('click', this.handleSignUp.bind(this));
+            }
+
+            if (btnAnonymous) {
+                btnAnonymous.addEventListener('click', this.handleAnonymousSignIn.bind(this));
             }
 
             if (btnSignOut) {
@@ -230,6 +237,43 @@ const AuthManager = {
             console.error('Sign up error:', error);
             btnSignUp.disabled = false;
             btnSignUp.textContent = 'Create Account';
+        }
+    },
+
+    async handleAnonymousSignIn() {
+        const { btnAnonymous, authStatus } = this.elements;
+        
+        if (!btnAnonymous) return;
+        
+        btnAnonymous.disabled = true;
+        btnAnonymous.innerHTML = '<span class="loading"></span> Signing in...';
+        
+        try {
+            const { error } = await window.USRA.signInAnonymously();
+            
+            btnAnonymous.disabled = false;
+            btnAnonymous.innerHTML = '<i class="fas fa-user-secret"></i> Continue as Guest';
+            
+            if (error) {
+                if (authStatus) {
+                    authStatus.textContent = error.message;
+                    authStatus.style.color = '#FF0000';
+                }
+            } else {
+                if (authStatus) {
+                    authStatus.textContent = 'Signed in as guest';
+                    authStatus.style.color = '#4CAF50';
+                }
+                this.setUI('signed-in');
+            }
+        } catch (error) {
+            console.error('Anonymous sign in error:', error);
+            btnAnonymous.disabled = false;
+            btnAnonymous.innerHTML = '<i class="fas fa-user-secret"></i> Continue as Guest';
+            if (authStatus) {
+                authStatus.textContent = 'Anonymous sign in failed';
+                authStatus.style.color = '#FF0000';
+            }
         }
     },
 
@@ -635,59 +679,1278 @@ const FormManager = {
     },
 
     setupRegistrationForm() {
-        const form = document.getElementById('registrationForm');
+        const form = document.getElementById('schoolRegistrationForm');
         if (!form) return;
 
-        form.addEventListener('submit', async function(e) {
+        // Remove any existing listeners to prevent duplicates
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        // Wait for DOM to be ready and other scripts to load
+        setTimeout(async () => {
+            const actualForm = document.getElementById('schoolRegistrationForm');
+            if (!actualForm) return;
+
+            // Test Supabase connection
+            if (window.USRA && window.USRA.supabase) {
+                try {
+                    console.log('Testing Supabase connection...');
+                    const { data, error } = await window.USRA.supabase.from('schools').select('count').limit(1);
+                    if (error) {
+                        console.error('Supabase connection test failed:', error);
+                    } else {
+                        console.log('Supabase connection successful');
+                    }
+                } catch (err) {
+                    console.error('Supabase connection error:', err);
+                }
+            }
+
+            actualForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Form submission started');
+            
+            // Set a timeout to prevent infinite loading
+            const timeoutId = setTimeout(() => {
+                console.error('Form submission timeout');
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+                    submitBtn.disabled = false;
+                }
+                Utils.showNotification('Registration is taking too long. Please try again.', 'error');
+            }, 30000); // 30 second timeout
             
             if (!window.USRA || !window.USRA.supabase) {
-                Utils.showNotification('Supabase not initialized', 'info');
+                clearTimeout(timeoutId);
+                console.error('Database connection not available');
+                Utils.showNotification('Database connection not available. Please refresh the page and try again.', 'error');
                 return;
             }
 
-            try {
-                const { data: auth } = await window.USRA.supabase.auth.getUser();
-                if (!auth || !auth.user) {
-                    Utils.showNotification('Please sign in as an administrator first.', 'info');
-                    return;
-                }
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn.disabled) return; // Prevent double submission
 
+            try {
+                console.log('Processing form data...');
                 const formData = new FormData(this);
                 const payload = Object.fromEntries(formData);
 
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.innerHTML = '<span class="loading"></span> Submitting...';
+                // Validate required fields
+                const requiredFields = [
+                    'schoolName', 'centerNumber', 'schoolEmail', 'schoolPhone1', 
+                    'address', 'region', 'district', 'adminFullName', 'nin', 
+                    'role', 'sex', 'qualification', 'contact1'
+                ];
+                
+                const missingFields = requiredFields.filter(field => !payload[field] || payload[field].trim() === '');
+                if (missingFields.length > 0) {
+                    clearTimeout(timeoutId);
+                    console.error('Missing required fields:', missingFields);
+                    Utils.showNotification(`Please fill in all required fields: ${missingFields.join(', ')}`, 'error');
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+
+                // Validate terms acceptance
+                const termsCheckbox = document.getElementById('termsAccept');
+                if (!termsCheckbox?.checked) {
+                    clearTimeout(timeoutId);
+                    console.error('Terms not accepted');
+                    Utils.showNotification('Please accept the terms and conditions to proceed.', 'error');
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(payload.schoolEmail)) {
+                    clearTimeout(timeoutId);
+                    console.error('Invalid email format:', payload.schoolEmail);
+                    Utils.showNotification('Please enter a valid email address', 'error');
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+
+                // Validate phone numbers
+                const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+                if (!phoneRegex.test(payload.schoolPhone1) || !phoneRegex.test(payload.contact1)) {
+                    clearTimeout(timeoutId);
+                    console.error('Invalid phone format');
+                    Utils.showNotification('Please enter valid phone numbers', 'error');
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+
+                // Show immediate feedback
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
                 submitBtn.disabled = true;
 
-                const { error } = await window.USRA.supabase.from('schools').insert({
+                // Handle file uploads first
+                console.log('Starting file uploads...');
+                const fileUrls = await FormManager.handleFileUploads(formData);
+                console.log('File upload results:', fileUrls);
+
+                // Create user account first if password provided
+                console.log('Creating user account...');
+                let userCreated = false;
+                let userId = null;
+                if (payload.adminPassword && payload.schoolEmail) {
+                    try {
+                        const { data: authData, error: authError } = await window.USRA.signUpWithEmail(
+                            payload.schoolEmail, 
+                            payload.adminPassword
+                        );
+                        
+                        if (!authError && authData.user) {
+                            userCreated = true;
+                            userId = authData.user.id;
+                        }
+                    } catch (authErr) {
+                        console.warn('User account creation failed, continuing with registration:', authErr);
+                    }
+                }
+
+                // Insert school registration data
+                console.log('Preparing school data for database...');
+                const schoolData = {
                     name: payload.schoolName,
-                    principal_name: payload.principalName,
-                    email: payload.email,
-                    phone: payload.phone,
+                    principal_name: payload.adminFullName,
+                    email: payload.schoolEmail,
+                    phone: payload.schoolPhone1,
                     address: payload.address,
-                    estimated_players: payload.players ? Number(payload.players) : null,
-                    notes: payload.message || null
-                });
+                    center_number: payload.centerNumber,
+                    school_email: payload.schoolEmail,
+                    contact1: payload.schoolPhone1,
+                    contact2: payload.schoolPhone2,
+                    region: payload.region,
+                    district: payload.district,
+                    badge_url: fileUrls.schoolBadge || null
+                };
+
+                // Add created_by if user was created
+                if (userId) {
+                    schoolData.created_by = userId;
+                }
+
+                console.log('Inserting school data:', schoolData);
+                const { data: schoolResult, error: schoolError } = await window.USRA.supabase
+                    .from('schools')
+                    .insert(schoolData)
+                    .select()
+                    .single();
                 
-                if (error) throw error;
+                console.log('School insert result:', schoolResult, schoolError);
+                if (schoolError) throw schoolError;
+
+                // Insert member data if user was created
+                if (userCreated && userId) {
+                    const memberData = {
+                        user_id: userId,
+                        full_name: payload.adminFullName,
+                        nin: payload.nin,
+                        role: payload.role,
+                        sex: payload.sex,
+                        highest_qualification: payload.qualification,
+                        contact1: payload.contact1,
+                        contact2: payload.contact2,
+                        profile_photo_url: fileUrls.profilePhoto || null,
+                        supporting_docs_url: fileUrls.supportingDocs || null
+                    };
+
+                    const { error: memberError } = await window.USRA.supabase
+                        .from('members')
+                        .insert(memberData);
+                    
+                    if (memberError) {
+                        console.warn('Member data insertion failed:', memberError);
+                    }
+                }
                 
-                Utils.showNotification('Registration submitted successfully!', 'success');
-                this.reset();
+                // Show success message
+                Utils.showNotification(
+                    userCreated 
+                        ? 'Registration and account created successfully! Redirecting...' 
+                        : 'Registration submitted successfully! Redirecting...', 
+                    'success'
+                );
+                
+                // Store registration data for profile page
+                const profileData = {
+                    ...payload,
+                    schoolId: schoolResult.id,
+                    fileUrls: fileUrls,
+                    registrationDate: new Date().toISOString()
+                };
+                localStorage.setItem('registrationData', JSON.stringify(profileData));
+                
+                // Show loading overlay during redirect
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.95);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    font-family: 'Inter', sans-serif;
+                `;
+                loadingOverlay.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                        <h3 style="color: var(--primary-red); margin-bottom: 10px;">Registration Successful!</h3>
+                        <p style="color: #666;">Redirecting to your profile...</p>
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(loadingOverlay);
+                
+                // Clear the timeout since we succeeded
+                clearTimeout(timeoutId);
+                
+                // Quick redirect
+                setTimeout(() => {
+                    window.location.href = 'profile.html';
+                }, 2000);
                 
             } catch (err) {
-                Utils.showNotification(`Submission failed: ${err.message}`, 'info');
-            } finally {
+                // Clear the timeout since we're handling the error
+                clearTimeout(timeoutId);
+                console.error('Registration error:', err);
+                
+                // Show user-friendly error message
+                let errorMessage = 'Registration failed. Please try again.';
+                if (err.message.includes('duplicate key')) {
+                    errorMessage = 'This email or school is already registered. Please use a different email address.';
+                } else if (err.message.includes('network')) {
+                    errorMessage = 'Network error. Please check your internet connection and try again.';
+                } else if (err.message.includes('invalid')) {
+                    errorMessage = 'Invalid data provided. Please check your information and try again.';
+                }
+                
+                Utils.showNotification(errorMessage, 'error');
+                
+                // Reset button
                 const submitBtn = this.querySelector('button[type="submit"]');
                 if (submitBtn) {
-                    submitBtn.textContent = 'Register School';
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
                     submitBtn.disabled = false;
+                }
+                
+                // Remove any loading overlays
+                const loadingOverlay = document.querySelector('.loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.remove();
                 }
             }
         });
+        }, 100); // Wait 100ms for other scripts to initialize
+    },
+
+    async handleFileUploads(formData) {
+        const fileUrls = {};
+        
+        try {
+            // Get current user for file organization (skip for now to avoid auth issues)
+            const userId = 'anonymous-' + Date.now();
+
+            // Handle school badge upload
+            const schoolBadge = formData.get('schoolBadge');
+            if (schoolBadge && schoolBadge.size > 0) {
+                const fileExt = schoolBadge.name.split('.').pop();
+                const fileName = `${userId}/school-badge-${Date.now()}.${fileExt}`;
+                
+                const { data: badgeData, error: badgeError } = await window.USRA.supabase.storage
+                    .from('school-badges')
+                    .upload(fileName, schoolBadge);
+                
+                if (!badgeError && badgeData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('school-badges')
+                        .getPublicUrl(fileName);
+                    fileUrls.schoolBadge = publicUrl;
+                }
+            }
+
+            // Handle profile photo upload
+            const profilePhoto = formData.get('profilePhoto');
+            if (profilePhoto && profilePhoto.size > 0) {
+                const fileExt = profilePhoto.name.split('.').pop();
+                const fileName = `${userId}/profile-photo-${Date.now()}.${fileExt}`;
+                
+                const { data: photoData, error: photoError } = await window.USRA.supabase.storage
+                    .from('profile-photos')
+                    .upload(fileName, profilePhoto);
+                
+                if (!photoError && photoData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('profile-photos')
+                        .getPublicUrl(fileName);
+                    fileUrls.profilePhoto = publicUrl;
+                }
+            }
+
+            // Handle supporting documents upload
+            const supportingDocs = formData.get('supportingDocs');
+            if (supportingDocs && supportingDocs.size > 0) {
+                const fileExt = supportingDocs.name.split('.').pop();
+                const fileName = `${userId}/supporting-docs-${Date.now()}.${fileExt}`;
+                
+                const { data: docsData, error: docsError } = await window.USRA.supabase.storage
+                    .from('supporting-docs')
+                    .upload(fileName, supportingDocs);
+                
+                if (!docsError && docsData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('supporting-docs')
+                        .getPublicUrl(fileName);
+                    fileUrls.supportingDocs = publicUrl;
+                }
+            }
+
+        } catch (error) {
+            console.warn('File upload error:', error);
+            // Continue with registration even if file uploads fail
+            // Return empty object so registration can proceed
+        }
+
+        console.log('File upload completed, returning:', fileUrls);
+        return fileUrls;
     }
 };
+
+// Enhanced Registration System with Supabase Integration
+class RegistrationSystem {
+    constructor() {
+        this.currentStep = 1;
+        this.totalSteps = 3;
+        this.registrationData = {};
+        this.init();
+    }
+
+    init() {
+        // Test Supabase connection first
+        this.testSupabaseConnection();
+        
+        this.bindEvents();
+        this.showStep(this.currentStep);
+        this.updateProgressBar();
+        this.setupFileUploads();
+        this.setupPasswordStrength();
+        this.loadDraftData();
+    }
+
+    async testSupabaseConnection() {
+        if (window.USRA && window.USRA.supabase) {
+            try {
+                console.log('Testing Supabase connection...');
+                const { data, error } = await window.USRA.supabase.from('schools').select('count').limit(1);
+                if (error) {
+                    console.error('Supabase connection test failed:', error);
+                } else {
+                    console.log('Supabase connection successful');
+                }
+            } catch (err) {
+                console.error('Supabase connection error:', err);
+            }
+        }
+    }
+
+    bindEvents() {
+        // Next step buttons
+        document.querySelectorAll('.next-step').forEach(btn => {
+            btn.addEventListener('click', () => this.nextStep());
+        });
+
+        // Previous step buttons
+        document.querySelectorAll('.prev-step').forEach(btn => {
+            btn.addEventListener('click', () => this.prevStep());
+        });
+
+        // Progress step navigation
+        document.querySelectorAll('.progress-step').forEach((step, index) => {
+            step.addEventListener('click', () => {
+                if (index + 1 <= this.currentStep) {
+                    this.currentStep = index + 1;
+                    this.showStep(this.currentStep);
+                    this.updateProgressBar();
+                }
+            });
+        });
+
+        // Form submission
+        const form = document.getElementById('schoolRegistrationForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitForm();
+            });
+        }
+
+        // Auto-save on input
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('input', () => this.autoSave());
+        });
+
+        // Terms checkbox
+        const termsCheckbox = document.getElementById('termsAccept');
+        const submitButton = document.querySelector('.submit-form');
+        
+        if (termsCheckbox && submitButton) {
+            termsCheckbox.addEventListener('change', function() {
+                submitButton.disabled = !this.checked;
+                submitButton.style.opacity = this.checked ? '1' : '0.5';
+            });
+            
+            // Initialize state
+            submitButton.disabled = !termsCheckbox.checked;
+            submitButton.style.opacity = termsCheckbox.checked ? '1' : '0.5';
+        }
+    }
+
+    nextStep() {
+        if (this.validateCurrentStep() && this.currentStep < this.totalSteps) {
+            this.currentStep++;
+            this.showStep(this.currentStep);
+            this.updateProgressBar();
+            if (this.currentStep === 3) {
+                this.updateSummary();
+            }
+        }
+    }
+
+    prevStep() {
+        if (this.currentStep > 1) {
+            this.currentStep--;
+            this.showStep(this.currentStep);
+            this.updateProgressBar();
+        }
+    }
+
+    showStep(step) {
+        document.querySelectorAll('.form-step').forEach((stepEl, index) => {
+            stepEl.classList.toggle('active', index + 1 === step);
+        });
+        
+        // Scroll to top
+        const formContainer = document.querySelector('.registration-form-container');
+        if (formContainer) {
+            formContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
+
+    updateProgressBar() {
+        document.querySelectorAll('.progress-step').forEach((stepEl, index) => {
+            stepEl.classList.toggle('active', index + 1 <= this.currentStep);
+        });
+    }
+
+    validateCurrentStep() {
+        const currentStepEl = document.querySelector(`.form-step[data-step="${this.currentStep}"]`);
+        if (!currentStepEl) return true;
+        
+        const requiredFields = currentStepEl.querySelectorAll('input[required], select[required]');
+        let isValid = true;
+
+        requiredFields.forEach(field => {
+            this.clearFieldError(field);
+            
+            if (!field.value.trim()) {
+                this.showFieldError(field, 'This field is required');
+                isValid = false;
+            } else {
+                // Additional validation
+                if (field.type === 'email' && !this.isValidEmail(field.value)) {
+                    this.showFieldError(field, 'Please enter a valid email address');
+                    isValid = false;
+                } else if (field.type === 'tel' && !this.isValidPhone(field.value)) {
+                    this.showFieldError(field, 'Please enter a valid phone number');
+                    isValid = false;
+                } else if (field.type === 'password' && field.value.length < 6) {
+                    this.showFieldError(field, 'Password must be at least 6 characters long');
+                    isValid = false;
+                }
+            }
+        });
+
+        return isValid;
+    }
+
+    showFieldError(field, message) {
+        field.style.borderColor = 'var(--primary-red)';
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        errorDiv.style.cssText = `
+            color: var(--primary-red);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        `;
+        
+        field.parentNode.appendChild(errorDiv);
+    }
+
+    clearFieldError(field) {
+        field.style.borderColor = '';
+        const errorDiv = field.parentNode.querySelector('.field-error');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
+
+    isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    isValidPhone(phone) {
+        return /^[\+]?[0-9\s\-\(\)]{10,}$/.test(phone);
+    }
+
+    updateSummary() {
+        document.querySelectorAll('[data-field]').forEach(element => {
+            const fieldName = element.getAttribute('data-field');
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                element.textContent = field.value || '-';
+            }
+        });
+    }
+
+    autoSave() {
+        // Collect form data
+        const form = document.getElementById('schoolRegistrationForm');
+        if (!form) return;
+        
+        const formData = new FormData(form);
+        this.registrationData = Object.fromEntries(formData.entries());
+        
+        // Save to localStorage for recovery
+        localStorage.setItem('usra_registration_draft', JSON.stringify(this.registrationData));
+        
+        // Show auto-save indicator
+        this.showAutoSaveIndicator();
+    }
+
+    showAutoSaveIndicator() {
+        const indicator = document.createElement('div');
+        indicator.textContent = 'Draft Saved';
+        indicator.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        document.body.appendChild(indicator);
+        
+        // Show and hide indicator
+        setTimeout(() => indicator.style.opacity = '1', 100);
+        setTimeout(() => {
+            indicator.style.opacity = '0';
+            setTimeout(() => indicator.remove(), 300);
+        }, 2000);
+    }
+
+    loadDraftData() {
+        const draftData = localStorage.getItem('usra_registration_draft');
+        if (draftData) {
+            try {
+                const data = JSON.parse(draftData);
+                // Populate form fields with draft data
+                Object.keys(data).forEach(key => {
+                    const field = document.querySelector(`[name="${key}"]`);
+                    if (field && data[key] && field.type !== 'file') {
+                        field.value = data[key];
+                    }
+                });
+                
+                Utils.showNotification('Draft data restored', 'success');
+            } catch (error) {
+                console.error('Error loading draft data:', error);
+            }
+        }
+    }
+
+    setupFileUploads() {
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const uploadArea = this.parentNode.querySelector('.file-upload-area span');
+                if (this.files[0]) {
+                    uploadArea.textContent = `Selected: ${this.files[0].name}`;
+                    this.parentNode.style.borderColor = 'var(--primary-red)';
+                    this.parentNode.style.background = 'rgba(220, 38, 38, 0.05)';
+                }
+            });
+        });
+    }
+
+    setupPasswordStrength() {
+        const passwordField = document.getElementById('adminPassword');
+        const strengthDiv = document.getElementById('passwordStrength');
+        
+        if (passwordField) {
+            passwordField.addEventListener('input', () => {
+                this.updatePasswordStrength(passwordField.value);
+            });
+
+            passwordField.addEventListener('focus', () => {
+                if (strengthDiv) strengthDiv.style.display = 'block';
+            });
+        }
+    }
+
+    updatePasswordStrength(password) {
+        const strengthFill = document.querySelector('.strength-fill');
+        const strengthText = document.querySelector('.strength-text');
+        
+        if (!strengthFill || !strengthText) return;
+
+        let strength = 0;
+        let strengthLabel = 'Very Weak';
+        let color = '#ff4757';
+
+        if (password.length >= 6) strength += 1;
+        if (password.length >= 8) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/[0-9]/.test(password)) strength += 1;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+        switch (strength) {
+            case 0:
+            case 1:
+                strengthLabel = 'Very Weak';
+                color = '#ff4757';
+                break;
+            case 2:
+                strengthLabel = 'Weak';
+                color = '#ff7675';
+                break;
+            case 3:
+                strengthLabel = 'Fair';
+                color = '#fdcb6e';
+                break;
+            case 4:
+                strengthLabel = 'Good';
+                color = '#6c5ce7';
+                break;
+            case 5:
+                strengthLabel = 'Strong';
+                color = '#00b894';
+                break;
+        }
+
+        const percentage = (strength / 5) * 100;
+        strengthFill.style.width = percentage + '%';
+        strengthFill.style.backgroundColor = color;
+        strengthText.textContent = `Password strength: ${strengthLabel}`;
+        strengthText.style.color = color;
+    }
+
+    async submitForm() {
+        console.log('=== REGISTRATION SUBMISSION STARTED ===');
+        
+        if (!this.validateCurrentStep()) {
+            console.log('Validation failed for current step');
+            return;
+        }
+
+        const termsAccepted = document.getElementById('termsAccept')?.checked;
+        if (!termsAccepted) {
+            console.log('Terms not accepted');
+            Utils.showNotification('Please accept the terms and conditions', 'error');
+            return;
+        }
+
+        console.log('Starting registration process...');
+        
+        // Show loading
+        this.showLoading(true);
+
+        try {
+            // Collect all form data
+            console.log('Collecting form data...');
+            const formData = this.collectFormData();
+            console.log('Form data collected:', formData);
+            
+            // Save to Supabase database
+            console.log('Saving to database...');
+            const result = await this.saveToDatabase(formData);
+            console.log('Database save result:', result);
+            
+            if (result.success) {
+                console.log('Registration successful! Preparing redirect...');
+                
+                // Clear draft data
+                localStorage.removeItem('usra_registration_draft');
+                
+                // Store data for profile page
+                localStorage.setItem('registrationData', JSON.stringify(result.data));
+                console.log('Data stored in localStorage for profile page');
+                
+                // Show success message
+                Utils.showNotification('Registration submitted successfully! Redirecting to profile...', 'success');
+                
+                // Hide loading and show success overlay
+                this.showLoading(false);
+                this.showSuccessOverlay();
+                
+                // Redirect after a short delay
+                console.log('Redirecting to profile page in 2 seconds...');
+                setTimeout(() => {
+                    console.log('Executing redirect to profile.html');
+                    try {
+                        window.location.href = 'profile.html';
+                    } catch (redirectError) {
+                        console.error('Redirect failed, trying alternative method:', redirectError);
+                        window.location.replace('profile.html');
+                    }
+                }, 2000);
+
+                // Fallback redirect in case the main one fails
+                setTimeout(() => {
+                    if (window.location.pathname.includes('registration.html')) {
+                        console.log('Fallback redirect executing...');
+                        window.location.replace('profile.html');
+                    }
+                }, 5000);
+                
+            } else {
+                console.error('Registration failed:', result.message);
+                throw new Error(result.message || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            console.error('Error stack:', error.stack);
+            
+            let errorMessage = 'Registration failed. Please try again.';
+            if (error.message.includes('duplicate key')) {
+                errorMessage = 'This email or school is already registered. Please use a different email address.';
+            } else if (error.message.includes('network')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+            } else if (error.message.includes('Database connection')) {
+                errorMessage = 'Database connection failed. Please refresh the page and try again.';
+            } else {
+                errorMessage = `Registration failed: ${error.message}`;
+            }
+            
+            Utils.showNotification(errorMessage, 'error');
+        } finally {
+            this.showLoading(false);
+            console.log('=== REGISTRATION SUBMISSION ENDED ===');
+        }
+    }
+
+    collectFormData() {
+        const form = document.getElementById('schoolRegistrationForm');
+        const formData = new FormData(form);
+        const data = {};
+        
+        // Convert FormData to regular object
+        for (let [key, value] of formData.entries()) {
+            if (value instanceof File) {
+                // Keep file objects for upload
+                data[key] = value;
+            } else {
+                data[key] = value;
+            }
+        }
+        
+        // Add metadata
+        data.registrationDate = new Date().toISOString();
+        data.status = 'pending';
+        data.id = this.generateId();
+        
+        return { formData, data };
+    }
+
+    async saveToDatabase(formDataObj) {
+        console.log('=== SAVE TO DATABASE STARTED ===');
+        const { formData, data } = formDataObj;
+        
+        console.log('Checking database connection...');
+        if (!window.USRA || !window.USRA.supabase) {
+            console.error('Database connection not available');
+            throw new Error('Database connection not available');
+        }
+        console.log('Database connection OK');
+
+        // Add timeout to entire operation
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Database operation timed out after 30 seconds')), 30000);
+        });
+
+        const saveOperation = async () => {
+
+        try {
+            // Handle file uploads first (non-blocking - continue even if they fail)
+            console.log('Starting file uploads...');
+            let fileUrls = {};
+            try {
+                fileUrls = await this.handleFileUploads(formData);
+                console.log('File uploads completed:', fileUrls);
+            } catch (uploadError) {
+                console.warn('File uploads failed, continuing with registration:', uploadError);
+                fileUrls = {}; // Continue with empty file URLs
+            }
+            
+            // Create user account if password provided
+            let userCreated = false;
+            let userId = null;
+            if (data.adminPassword && data.schoolEmail) {
+                console.log('Creating user account for:', data.schoolEmail);
+                try {
+                    const { data: authData, error: authError } = await window.USRA.signUpWithEmail(
+                        data.schoolEmail, 
+                        data.adminPassword
+                    );
+                    
+                    console.log('Auth result:', { authData, authError });
+                    
+                    if (!authError && authData.user) {
+                        userCreated = true;
+                        userId = authData.user.id;
+                        console.log('User account created successfully:', userId);
+                    } else if (authError) {
+                        console.log('Auth error (continuing without user account):', authError);
+                    }
+                } catch (authErr) {
+                    console.warn('User account creation failed, continuing with registration:', authErr);
+                }
+            } else {
+                console.log('No password provided, skipping user account creation');
+            }
+
+            // Prepare school data for database
+            console.log('Preparing school data...');
+            
+            // Validate required fields
+            const requiredFields = {
+                schoolName: data.schoolName,
+                adminFullName: data.adminFullName,
+                schoolEmail: data.schoolEmail,
+                schoolPhone1: data.schoolPhone1,
+                address: data.address
+            };
+            
+            const missingFields = [];
+            for (const [key, value] of Object.entries(requiredFields)) {
+                if (!value || value.trim() === '') {
+                    missingFields.push(key);
+                }
+            }
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+            }
+            
+            const schoolData = {
+                name: data.schoolName.trim(),
+                principal_name: data.adminFullName.trim(),
+                email: data.schoolEmail.trim().toLowerCase(),
+                phone: data.schoolPhone1.trim(),
+                address: data.address.trim(),
+                center_number: data.centerNumber || null,
+                school_email: data.schoolEmail.trim().toLowerCase(),
+                contact1: data.schoolPhone1.trim(),
+                contact2: data.schoolPhone2 ? data.schoolPhone2.trim() : null,
+                region: data.region || null,
+                district: data.district || null,
+                badge_url: fileUrls.schoolBadge || null
+            };
+
+            if (userId) {
+                schoolData.created_by = userId;
+            }
+
+            console.log('School data prepared:', schoolData);
+
+            // Insert school data
+            console.log('Inserting school data into database...');
+            
+            // First, try inserting without immediately selecting (to avoid RLS issues)
+            const { error: insertError } = await window.USRA.supabase
+                .from('schools')
+                .insert(schoolData);
+            
+            if (insertError) {
+                console.error('School insertion failed:', insertError);
+                throw insertError;
+            }
+            
+            console.log('School data inserted successfully');
+            
+            // Now try to get the inserted record (with retry mechanism)
+            let schoolResult = null;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries && !schoolResult) {
+                try {
+                    const { data: selectData, error } = await window.USRA.supabase
+                        .from('schools')
+                        .select('*')
+                        .eq('email', schoolData.email)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .single();
+                    
+                    if (!error && selectData) {
+                        schoolResult = selectData;
+                        console.log('School record retrieved:', schoolResult);
+                        break;
+                    }
+                } catch (selectError) {
+                    console.warn(`Attempt ${retryCount + 1} to retrieve school record failed:`, selectError);
+                }
+                
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    console.log(`Retrying school record retrieval (${retryCount}/${maxRetries})...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+                }
+            }
+            
+            // If we still can't get the record, create a fallback ID
+            if (!schoolResult) {
+                console.warn('Could not retrieve inserted school record, using fallback');
+                schoolResult = { 
+                    id: 'temp-' + Date.now(),
+                    ...schoolData,
+                    created_at: new Date().toISOString()
+                };
+            }
+
+            console.log('School data inserted successfully, ID:', schoolResult.id);
+
+            // Insert member data if user was created
+            if (userCreated && userId) {
+                console.log('Inserting member data...');
+                const memberData = {
+                    user_id: userId,
+                    full_name: data.adminFullName,
+                    nin: data.nin,
+                    role: data.role,
+                    sex: data.sex,
+                    highest_qualification: data.qualification,
+                    contact1: data.contact1,
+                    contact2: data.contact2,
+                    profile_photo_url: fileUrls.profilePhoto || null,
+                    supporting_docs_url: fileUrls.supportingDocs || null
+                };
+
+                console.log('Member data:', memberData);
+
+                const { error: memberError } = await window.USRA.supabase
+                    .from('members')
+                    .insert(memberData);
+                
+                if (memberError) {
+                    console.warn('Member data insertion failed:', memberError);
+                } else {
+                    console.log('Member data inserted successfully');
+                }
+            }
+
+            // Return success with combined data
+            const result = {
+                success: true,
+                data: {
+                    ...data,
+                    schoolId: schoolResult.id,
+                    fileUrls: fileUrls,
+                    userCreated: userCreated
+                }
+            };
+            
+            console.log('=== SAVE TO DATABASE COMPLETED SUCCESSFULLY ===');
+            console.log('Final result:', result);
+            return result;
+
+        } catch (error) {
+            console.error('=== SAVE TO DATABASE FAILED ===');
+            console.error('Database save error:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
+            return {
+                success: false,
+                message: error.message || 'Unknown database error'
+            };
+        }
+        }; // End saveOperation function
+
+        // Race between the save operation and timeout
+        try {
+            return await Promise.race([saveOperation(), timeoutPromise]);
+        } catch (error) {
+            console.error('Database operation failed or timed out:', error);
+            return {
+                success: false,
+                message: error.message || 'Database operation failed'
+            };
+        }
+    }
+
+    async handleFileUploads(formData) {
+        const fileUrls = {};
+        
+        try {
+            const userId = 'anonymous-' + Date.now();
+
+            // Handle school badge upload
+            const schoolBadge = formData.get('schoolBadge');
+            if (schoolBadge && schoolBadge.size > 0) {
+                const fileExt = schoolBadge.name.split('.').pop();
+                const fileName = `${userId}/school-badge-${Date.now()}.${fileExt}`;
+                
+                const { data: badgeData, error: badgeError } = await window.USRA.supabase.storage
+                    .from('school-badges')
+                    .upload(fileName, schoolBadge);
+                
+                if (!badgeError && badgeData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('school-badges')
+                        .getPublicUrl(fileName);
+                    fileUrls.schoolBadge = publicUrl;
+                }
+            }
+
+            // Handle profile photo upload
+            const profilePhoto = formData.get('profilePhoto');
+            if (profilePhoto && profilePhoto.size > 0) {
+                const fileExt = profilePhoto.name.split('.').pop();
+                const fileName = `${userId}/profile-photo-${Date.now()}.${fileExt}`;
+                
+                const { data: photoData, error: photoError } = await window.USRA.supabase.storage
+                    .from('profile-photos')
+                    .upload(fileName, profilePhoto);
+                
+                if (!photoError && photoData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('profile-photos')
+                        .getPublicUrl(fileName);
+                    fileUrls.profilePhoto = publicUrl;
+                }
+            }
+
+            // Handle supporting documents upload
+            const supportingDocs = formData.get('supportingDocs');
+            if (supportingDocs && supportingDocs.size > 0) {
+                const fileExt = supportingDocs.name.split('.').pop();
+                const fileName = `${userId}/supporting-docs-${Date.now()}.${fileExt}`;
+                
+                const { data: docsData, error: docsError } = await window.USRA.supabase.storage
+                    .from('supporting-docs')
+                    .upload(fileName, supportingDocs);
+                
+                if (!docsError && docsData) {
+                    const { data: { publicUrl } } = window.USRA.supabase.storage
+                        .from('supporting-docs')
+                        .getPublicUrl(fileName);
+                    fileUrls.supportingDocs = publicUrl;
+                }
+            }
+
+        } catch (error) {
+            console.warn('File upload error:', error);
+        }
+
+        return fileUrls;
+    }
+
+    generateId() {
+        return 'USRA-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    }
+
+    showLoading(show) {
+        let overlay = document.getElementById('loadingOverlay');
+        
+        if (show && !overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                font-family: 'Inter', sans-serif;
+            `;
+            overlay.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                    <h3 style="color: var(--primary-red); margin-bottom: 10px;">Processing Registration...</h3>
+                    <p style="color: #666;">Please wait while we save your information</p>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            document.body.appendChild(overlay);
+        } else if (!show && overlay) {
+            overlay.remove();
+        }
+    }
+
+    showSuccessOverlay() {
+        // Remove any existing overlays
+        const existingOverlay = document.getElementById('loadingOverlay');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'successOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+        `;
+        overlay.innerHTML = `
+            <div style="text-align: center;">
+                <div style="width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; animation: successPulse 1s ease-out;">
+                    <i class="fas fa-check" style="color: white; font-size: 40px;"></i>
+                </div>
+                <h2 style="color: #10b981; margin-bottom: 15px; font-size: 2rem;">Registration Successful!</h2>
+                <p style="color: #666; font-size: 1.1rem; margin-bottom: 20px;">Your school has been registered successfully</p>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 20px;">Redirecting to your profile page...</p>
+                <button onclick="window.location.href='profile.html'" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 10px;">
+                    View Profile Page
+                </button>
+            </div>
+            <style>
+                @keyframes successPulse {
+                    0% { transform: scale(0); opacity: 0; }
+                    50% { transform: scale(1.1); opacity: 1; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+            </style>
+        `;
+        document.body.appendChild(overlay);
+
+        // Auto-remove after redirect
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.remove();
+            }
+        }, 3000);
+    }
+}
+
+// Global function for password toggle (backward compatibility)
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const passwordIcon = document.getElementById(fieldId + 'Icon');
+    
+    if (passwordField && passwordIcon) {
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+        }
+    }
+}
+
+// Global debug functions for testing
+window.debugRegistration = {
+    testRedirect: function() {
+        console.log('Testing redirect to profile page...');
+        window.location.href = 'profile.html';
+    },
+    
+    testDataStorage: function() {
+        const testData = {
+            schoolName: 'Test School',
+            adminFullName: 'Test User',
+            schoolEmail: 'test@school.com',
+            registrationDate: new Date().toISOString()
+        };
+        localStorage.setItem('registrationData', JSON.stringify(testData));
+        console.log('Test data stored:', testData);
+        this.testRedirect();
+    },
+    
+    checkSupabase: function() {
+        console.log('USRA object:', window.USRA);
+        console.log('Supabase:', window.USRA?.supabase);
+        if (window.USRA?.supabase) {
+            console.log('Supabase connection appears to be available');
+        } else {
+            console.error('Supabase connection not available');
+        }
+    }
+};
+
+// Add to console for easy access
+console.log('Debug functions available: window.debugRegistration');
+console.log('- debugRegistration.testRedirect() - Test redirect to profile');
+console.log('- debugRegistration.testDataStorage() - Test data storage and redirect');
+console.log('- debugRegistration.checkSupabase() - Check Supabase connection');
 
 // Dashboard Role Check
 const DashboardManager = {
@@ -833,7 +2096,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Navbar JS from provided spec
     EventsManager.init();
     StatsManager.init();
+    // Initialize Enhanced Registration System
+    if (document.getElementById('schoolRegistrationForm')) {
+        new RegistrationSystem();
+    } else {
     FormManager.init();
+    }
     DashboardManager.init();
     LightboxManager.init();
 

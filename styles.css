@@ -314,18 +314,7 @@ p {
     color: var(--primary-red);
 }
 
-/* Active underline accent like screenshot */
-.nav-link.active::after,
-.nav-more > .nav-link.active::after {
-    content: '';
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    bottom: -10px;
-    height: 3px;
-    background: var(--primary-red);
-    border-radius: 2px;
-}
+/* Active underline accent like screenshot - REMOVED to fix duplicate underlines */
 
 /* More menu subtle style */
 .nav-more .nav-link {
@@ -565,8 +554,7 @@ p {
     transition: width 0.3s ease;
     border-radius: 2px;
 }
-.nav-link:hover::after { width: calc(100% - 32px); }
-.nav-link.active::after { width: calc(100% - 32px); }
+/* REMOVED: Duplicate underline rules - keeping main underline rules below */
 
 /* Dropdown visibility */
 .dropdown-menu { opacity: 0; visibility: hidden; transform: translateY(-10px); }
@@ -5318,9 +5306,7 @@ body.menu-open {
             color: #b91010;
         }
 
-        .nav-link.active::before {
-            width: 100%;
-        }
+        /* REMOVED: Duplicate active underline rule */
 
         /* CTA Button */
         .nav-cta {
@@ -5550,13 +5536,4 @@ body.menu-open {
 
 
 
-        /* Fix double underline on active nav item hover */
-.nav-link.active::before {
-    /* Only show underline if not hovered */
-    width: 100%;
-}
-
-.nav-link.active:hover::before {
-    /* Prevent double underline by keeping width at 100% */
-    width: 100%;
-}
+        /* REMOVED: Fix double underline rules - no longer needed */

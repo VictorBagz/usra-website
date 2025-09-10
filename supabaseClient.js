@@ -23,6 +23,10 @@ async function signUpWithEmail(email, password, metadata = {}) {
 	return supabase.auth.signUp({ email, password, options: { data: metadata } });
 }
 
+async function signInAnonymously() {
+	return supabase.auth.signInAnonymously();
+}
+
 async function signOut() {
 	return supabase.auth.signOut();
 }
@@ -32,5 +36,6 @@ window.USRA = {
 	getCurrentUser,
 	signInWithEmail,
 	signUpWithEmail,
+	signInAnonymously,
 	signOut
 };

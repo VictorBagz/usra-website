@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Registration Profile - Uganda Schools Rugby Association (USRA)</title>
+	<!-- Preload critical resources -->
+	<link rel="preload" href="styles.css" as="style">
+	<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style">
+	<link rel="preload" href="photos/usraLogo.png" as="image">
+	
+	<!-- Critical CSS -->
+	<link rel="stylesheet" href="styles.css">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+	
+	<!-- Non-critical CSS - load asynchronously -->
+	<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+	
+	<link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+	
+	<!-- Scripts -->
+	<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+	<style>
+		.profile-hero {
+			background: linear-gradient(135deg, rgba(220, 20, 60, 0.95), rgba(139, 0, 0, 0.95)), url('photos/rugby-field.jpg');
+			background-size: cover;
+			background-position: center;
+			padding: 120px 0 60px;
+		}
+
+		.profile-header {
+			text-align: center;
+			color: white;
+		}
+
+		.profile-header h1 {
+			font-size: 2.5rem;
+			margin-bottom: 10px;
+		}
+
+		.profile-header p {
+			font-size: 1.2rem;
+			opacity: 0.9;
+		}
+
+		.success-icon {
+			font-size: 4rem;
+			color: #4CAF50;
+			margin-bottom: 20px;
+		}
+
+		.profile-content {
+			padding: 60px 0;
+			background: #f8f9fa;
+		}
+
+		.profile-container {
+			max-width: 1200px;
+			margin: 0 auto;
+			display: grid;
+			grid-template-columns: 1fr 350px;
+			gap: 40px;
+			padding: 0 20px;
+		}
+
+		.profile-main {
+			background: white;
+			border-radius: 15px;
+			padding: 30px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		}
+
+		.profile-sidebar {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+
+		.sidebar-card {
+			background: white;
+			border-radius: 15px;
+			padding: 25px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		}
+
+		.info-section {
+			margin-bottom: 30px;
+		}
+
+		.info-section h3 {
+			color: var(--primary-red);
+			font-size: 1.3rem;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 2px solid #f0f0f0;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.info-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 15px;
+		}
+
+		.info-item {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.info-label {
+			font-weight: 600;
+			color: #666;
+			font-size: 0.9rem;
+			margin-bottom: 5px;
+		}
+
+		.info-value {
+			color: #333;
+			font-size: 1rem;
+			padding: 8px 0;
+		}
+
+		.status-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 16px;
+			border-radius: 25px;
+			font-size: 0.9rem;
+			font-weight: 500;
+		}
+
+		.status-pending {
+			background: rgba(255, 193, 7, 0.1);
+			color: #ff8800;
+			border: 1px solid rgba(255, 193, 7, 0.3);
+		}
+
+		.status-approved {
+			background: rgba(76, 175, 80, 0.1);
+			color: #4CAF50;
+			border: 1px solid rgba(76, 175, 80, 0.3);
+		}
+
+		.action-buttons {
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+		}
+
+		.btn {
+			padding: 12px 20px;
+			border-radius: 8px;
+			border: none;
+			font-size: 1rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			text-decoration: none;
+			text-align: center;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+		}
+
+		.btn-primary {
+			background: var(--primary-red);
+			color: white;
+		}
+
+		.btn-primary:hover {
+			background: #b91846;
+			transform: translateY(-2px);
+		}
+
+		.btn-outline {
+			background: transparent;
+			color: var(--primary-red);
+			border: 2px solid var(--primary-red);
+		}
+
+		.btn-outline:hover {
+			background: var(--primary-red);
+			color: white;
+		}
+
+		.file-downloads {
+			margin-top: 20px;
+		}
+
+		.file-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 10px 0;
+			border-bottom: 1px solid #f0f0f0;
+		}
+
+		.file-item:last-child {
+			border-bottom: none;
+		}
+
+		.file-info {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.file-icon {
+			width: 40px;
+			height: 40px;
+			background: rgba(220, 20, 60, 0.1);
+			border-radius: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var(--primary-red);
+		}
+
+		.loading-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(255, 255, 255, 0.9);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 10000;
+		}
+
+		.loading-spinner {
+			width: 50px;
+			height: 50px;
+			border: 4px solid #f3f3f3;
+			border-top: 4px solid var(--primary-red);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		@media (max-width: 768px) {
+			.profile-container {
+				grid-template-columns: 1fr;
+				gap: 20px;
+			}
+
+			.profile-header h1 {
+				font-size: 2rem;
+			}
+
+			.info-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<!-- Loading Overlay -->
+	<div id="loadingOverlay" class="loading-overlay">
+		<div class="loading-spinner"></div>
+	</div>
+
+	<!-- Simple & Professional Navigation -->
+	<nav class="navbar">
+		<div class="nav-container">
+			<a href="index.html" class="nav-logo">
+				<img src="photos/usraLogo.png" alt="USRA Logo">
+				<span>USRA</span>
+			</a>
+			<ul class="nav-menu">
+				<li><a href="index.html" class="nav-link">Home</a></li>
+				<li><a href="events.html" class="nav-link">Events</a></li>
+				<li><a href="signin.html" class="nav-link">Sign In</a></li>
+				<li><a href="index.html#about" class="nav-link">About</a></li>
+				<li class="nav-more">
+					<a href="#" class="nav-link">More ↓</a>
+					<ul class="dropdown-menu">
+						<li><a href="leadership.html">Leadership</a></li>
+						<li><a href="workplan.html">Workplan 2025</a></li>
+						<li><a href="medical-fund.html">Medical Fund</a></li>
+						<li><a href="photos.html">Photos</a></li>
+					</ul>
+				</li>
+				<li><a href="index.html#contact" class="nav-link">Contact</a></li>
+				<li id="navDashboard" style="display:none;"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+			</ul>
+			<div class="hamburger">
+				<span class="bar"></span>
+				<span class="bar"></span>
+				<span class="bar"></span>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Profile Hero Section -->
+	<section class="profile-hero">
+		<div class="container">
+			<div class="profile-header" data-aos="fade-up">
+				<div class="success-icon">
+					<i class="fas fa-check-circle"></i>
+				</div>
+				<h1>Registration Successful!</h1>
+				<p>Your school registration has been submitted and is being reviewed</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Profile Content -->
+	<section class="profile-content">
+		<div class="profile-container">
+			<!-- Main Profile Information -->
+			<div class="profile-main" data-aos="fade-up">
+				<div class="info-section">
+					<h3><i class="fas fa-school"></i> School Information</h3>
+					<div class="info-grid">
+						<div class="info-item">
+							<span class="info-label">School Name</span>
+							<span class="info-value" id="schoolName">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Centre Number</span>
+							<span class="info-value" id="centerNumber">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Email Address</span>
+							<span class="info-value" id="schoolEmail">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Primary Contact</span>
+							<span class="info-value" id="contact1">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Region</span>
+							<span class="info-value" id="region">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">District</span>
+							<span class="info-value" id="district">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Address</span>
+							<span class="info-value" id="address">-</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="info-section">
+					<h3><i class="fas fa-user-tie"></i> School Representative</h3>
+					<div class="info-grid">
+						<div class="info-item">
+							<span class="info-label">Full Name</span>
+							<span class="info-value" id="adminFullName">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">National ID (NIN)</span>
+							<span class="info-value" id="nin">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Role/Position</span>
+							<span class="info-value" id="role">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Gender</span>
+							<span class="info-value" id="sex">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Qualification</span>
+							<span class="info-value" id="qualification">-</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Contact Number</span>
+							<span class="info-value" id="adminContact1">-</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="info-section" id="documentsSection">
+					<h3><i class="fas fa-file-alt"></i> Uploaded Documents</h3>
+					<div class="file-downloads" id="fileDownloads">
+						<!-- Documents will be loaded here -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Sidebar -->
+			<div class="profile-sidebar">
+				<!-- Registration Status -->
+				<div class="sidebar-card" data-aos="fade-left">
+					<h3>Registration Status</h3>
+					<div class="status-badge status-pending">
+						<i class="fas fa-clock"></i>
+						<span>Under Review</span>
+					</div>
+					<p style="margin-top: 15px; color: #666; font-size: 0.9rem;">
+						Your registration is being reviewed by USRA officials. You will be notified once approved.
+					</p>
+				</div>
+
+				<!-- Quick Actions -->
+				<div class="sidebar-card" data-aos="fade-left" data-aos-delay="100">
+					<h3>Quick Actions</h3>
+					<div class="action-buttons">
+						<a href="registration.html" class="btn btn-outline">
+							<i class="fas fa-plus"></i>
+							Register Another School
+						</a>
+						<a href="signin.html" class="btn btn-primary">
+							<i class="fas fa-sign-in-alt"></i>
+							Administrator Sign In
+						</a>
+						<button class="btn btn-outline" id="printProfile">
+							<i class="fas fa-print"></i>
+							Print Registration
+						</button>
+					</div>
+				</div>
+
+				<!-- Contact Support -->
+				<div class="sidebar-card" data-aos="fade-left" data-aos-delay="200">
+					<h3>Need Help?</h3>
+					<p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">
+						Have questions about your registration? Contact USRA support.
+					</p>
+					<div class="action-buttons">
+						<a href="index.html#contact" class="btn btn-outline">
+							<i class="fas fa-envelope"></i>
+							Contact Us
+						</a>
+						<a href="tel:+256000000000" class="btn btn-outline">
+							<i class="fas fa-phone"></i>
+							Call Support
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer class="footer">
+		<div class="container">
+			<div class="footer-content">
+				<div class="footer-section">
+					<div class="footer-logo">
+						<img src="photos/usraLogo.png" alt="USRA Logo" loading="lazy">
+						<span>USRA</span>
+					</div>
+					<p>Developing the future of rugby in Uganda through school sports excellence.</p>
+					<div class="social-links">
+						<a href="#"><i class="fab fa-facebook"></i></a>
+						<a href="@USRA_Official1"><i class="fab fa-twitter"></i></a>
+						<a href="#"><i class="fab fa-instagram"></i></a>
+						<a href="#"><i class="fab fa-youtube"></i></a>
+					</div>
+				</div>
+				<div class="footer-section">
+					<h4>Quick Links</h4>
+					<ul>
+						<li><a href="index.html#home">Home</a></li>
+						<li><a href="index.html#about">About</a></li>
+						<li><a href="index.html#chairman">Chairman's Message</a></li>
+						<li><a href="registration.html">Registration</a></li>
+						<li><a href="signin.html">Administrator Sign In</a></li>
+					</ul>
+				</div>
+				<div class="footer-section">
+					<h4>Downloads</h4>
+					<ul>
+						<li><a href="photos/2025 USRA COMPETITIONS MANUAL FINAL.pdf" download="USRA-Tournament-Manual-2025.pdf" target="_blank">
+							<i class="fas fa-download"></i> Tournament Manual</a></li>
+						<li><a href="assets/docs/school-registration-form.pdf" download="USRA-School-Registration-Form.pdf" target="_blank">
+							<i class="fas fa-download"></i> Registration Form</a></li>
+						<li><a href="photos/USRA ACCOUNTABILITY FORM.pdf" download="USRA-Accountability-Form.pdf" target="_blank">
+							<i class="fas fa-download"></i> Accountability Form</a></li>
+					</ul>
+				</div>
+				<div class="footer-section">
+					<h4>Contact</h4>
+					<p>Get in touch with USRA</p>
+					<div class="contact-info">
+						<p><i class="fas fa-envelope"></i> info@usra.ug</p>
+						<p><i class="fas fa-phone"></i> +256 XXX XXX XXX</p>
+					</div>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<p>&copy; 2025 Uganda Schools Rugby Association. All rights reserved.</p>
+			</div>
+		</div>
+	</footer>
+
+	<!-- Load scripts asynchronously for better performance -->
+	<script async src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+	<script defer src="supabaseClient.js"></script>
+	<script defer src="script.js"></script>
+	<script defer src="profile.js"></script>
+</body>
+</html>

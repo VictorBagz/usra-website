@@ -1,0 +1,15 @@
+.navbar .register-now-btn {
+    padding: 6px 18px;
+    font-size: 1rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    background: #b71c1c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 16px;
+    height: 40px;
+    min-width: unset;
+    /* Remove excessive shadow or large border-radius */
+}
