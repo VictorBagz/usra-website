@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ddd;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Supabase Connection Diagnostics</h1>
+        <p>This tool will test all aspects of your Supabase configuration.</p>
+        
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="clearResults()">🧹 Clear Results</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <!-- Load Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(title, status, message, details = '') {
+            const div = document.createElement('div');
+            div.className = `test-item ${status}`;
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+                ${details ? `<pre>${details}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+        
+        function clearResults() {
+            results.innerHTML = '';
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            results.innerHTML = '<div class="test-item info">Running tests...</div>';
+            
+            // Test 1: Check if Supabase JS is loaded
+            await testSupabaseLibrary();
+            
+            // Test 2: Check credentials
+            await testCredentials();
+            
+            // Test 3: Test connection
+            await testConnection();
+            
+            // Test 4: Test authentication
+            await testAuthentication();
+            
+            // Test 5: Test database access
+            await testDatabaseAccess();
+            
+            // Test 6: Test storage buckets
+            await testStorageBuckets();
+            
+            // Test 7: Test network connectivity
+            await testNetworkConnectivity();
+            
+            // Remove loading message
+            const loadingMsg = results.querySelector('.info');
+            if (loadingMsg) loadingMsg.remove();
+        }
+        
+        async function testSupabaseLibrary() {
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    addResult('❌ Supabase Library', 'error', 'Supabase JS library is not loaded', 
+                        'Add this to your HTML: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
+                    return false;
+                }
+                addResult('✅ Supabase Library', 'success', 'Supabase JS library loaded successfully');
+                return true;
+            } catch (error) {
+                addResult('❌ Supabase Library', 'error', 'Error checking Supabase library', error.message);
+                return false;
+            }
+        }
+        
+        async function testCredentials() {
+            try {
+                const url = 'https://ycdsyaenakevtozcomgk.supabase.co';
+                const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE';
+                
+                if (!url || !key) {
+                    addResult('❌ Credentials', 'error', 'Supabase URL or key is missing');
+                    return false;
+                }
+                
+                // Check URL format
+                if (!url.includes('supabase.co')) {
+                    addResult('❌ Credentials', 'error', 'Invalid Supabase URL format', `URL: ${url}`);
+                    return false;
+                }
+                
+                // Check key format (should be a JWT)
+                if (!key.startsWith('eyJ')) {
+                    addResult('❌ Credentials', 'error', 'Invalid Supabase key format (should be JWT)');
+                    return false;
+                }
+                
+                addResult('✅ Credentials', 'success', 'Supabase credentials format is valid', 
+                    `URL: ${url}\nKey: ${key.substring(0, 20)}...`);
+                return true;
+            } catch (error) {
+                addResult('❌ Credentials', 'error', 'Error validating credentials', error.message);
+                return false;
+            }
+        }
+        
+        async function testConnection() {
+            try {
+                const supabase = window.supabase.createClient(
+                    'https://ycdsyaenakevtozcomgk.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                );
+                
+                // Test basic connection with a simple query
+                const { data, error } = await supabase.from('schools').select('count', { count: 'exact', head: true });
+                
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        addResult('⚠️ Connection', 'warning', 'Connected but schools table does not exist', 
+                            'The database connection works, but the schools table needs to be created.');
+                        return true;
+                    } else {
+                        addResult('❌ Connection', 'error', 'Database connection failed', error.message);
+                        return false;
+                    }
+                }
+                
+                addResult('✅ Connection', 'success', 'Successfully connected to Supabase database');
+                return true;
+            } catch (error) {
+                addResult('❌ Connection', 'error', 'Connection test failed', error.message);
+                return false;
+            }
+        }
+        
+        async function testAuthentication() {
+            try {
+                const supabase = window.supabase.createClient(
+                    'https://ycdsyaenakevtozcomgk.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                );
+                
+                // Test getting current user (should work even if no user is signed in)
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    addResult('❌ Authentication', 'error', 'Auth service not accessible', error.message);
+                    return false;
+                }
+                
+                const status = user ? 'User is signed in' : 'No user signed in (normal for anonymous access)';
+                addResult('✅ Authentication', 'success', 'Auth service is working', status);
+                return true;
+            } catch (error) {
+                addResult('❌ Authentication', 'error', 'Authentication test failed', error.message);
+                return false;
+            }
+        }
+        
+        async function testDatabaseAccess() {
+            try {
+                const supabase = window.supabase.createClient(
+                    'https://ycdsyaenakevtozcomgk.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                );
+                
+                // Check if schools table exists and has the right structure
+                const { data, error } = await supabase.from('schools').select('*').limit(1);
+                
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        addResult('⚠️ Database Schema', 'warning', 'Schools table does not exist', 
+                            'Run the schema.sql or update_schools_table.sql script to create the table.');
+                        return false;
+                    } else {
+                        addResult('❌ Database Schema', 'error', 'Database access error', error.message);
+                        return false;
+                    }
+                }
+                
+                addResult('✅ Database Schema', 'success', 'Schools table exists and is accessible');
+                
+                // Test required columns
+                const requiredColumns = [
+                    'school_name', 'center_number', 'school_email', 'school_phone1', 
+                    'address', 'region', 'district', 'admin_full_name', 'nin', 'role', 
+                    'sex', 'qualification', 'status', 'user_id'
+                ];
+                
+                // Try to select with required columns
+                const { error: columnError } = await supabase
+                    .from('schools')
+                    .select(requiredColumns.join(','))
+                    .limit(1);
+                
+                if (columnError) {
+                    addResult('⚠️ Table Structure', 'warning', 'Some required columns are missing', 
+                        'Run update_schools_table.sql to add missing columns.\n' + columnError.message);
+                } else {
+                    addResult('✅ Table Structure', 'success', 'All required columns are present');
+                }
+                
+                return true;
+            } catch (error) {
+                addResult('❌ Database Access', 'error', 'Database test failed', error.message);
+                return false;
+            }
+        }
+        
+        async function testStorageBuckets() {
+            try {
+                const supabase = window.supabase.createClient(
+                    'https://ycdsyaenakevtozcomgk.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                );
+                
+                const requiredBuckets = ['school_badges', 'profile_photos', 'supporting_documents'];
+                const bucketStatus = [];
+                
+                for (const bucketName of requiredBuckets) {
+                    try {
+                        const { data, error } = await supabase.storage.from(bucketName).list('', { limit: 1 });
+                        
+                        if (error) {
+                            bucketStatus.push(`❌ ${bucketName}: ${error.message}`);
+                        } else {
+                            bucketStatus.push(`✅ ${bucketName}: OK`);
+                        }
+                    } catch (e) {
+                        bucketStatus.push(`❌ ${bucketName}: ${e.message}`);
+                    }
+                }
+                
+                const allBucketsExist = bucketStatus.every(status => status.includes('✅'));
+                
+                if (allBucketsExist) {
+                    addResult('✅ Storage Buckets', 'success', 'All required storage buckets exist', 
+                        bucketStatus.join('\n'));
+                } else {
+                    addResult('⚠️ Storage Buckets', 'warning', 'Some storage buckets are missing', 
+                        bucketStatus.join('\n') + '\n\nRun update_schools_table.sql to create missing buckets.');
+                }
+                
+                return allBucketsExist;
+            } catch (error) {
+                addResult('❌ Storage Buckets', 'error', 'Storage test failed', error.message);
+                return false;
+            }
+        }
+        
+        async function testNetworkConnectivity() {
+            try {
+                // Test basic network connectivity to Supabase
+                const response = await fetch('https://ycdsyaenakevtozcomgk.supabase.co/rest/v1/', {
+                    method: 'HEAD',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                    }
+                });
+                
+                if (response.ok) {
+                    addResult('✅ Network Connectivity', 'success', 'Network connection to Supabase is working', 
+                        `Status: ${response.status} ${response.statusText}`);
+                    return true;
+                } else {
+                    addResult('❌ Network Connectivity', 'error', 'Network connection failed', 
+                        `Status: ${response.status} ${response.statusText}`);
+                    return false;
+                }
+            } catch (error) {
+                addResult('❌ Network Connectivity', 'error', 'Network test failed', 
+                    error.message + '\n\nCheck your internet connection and firewall settings.');
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -5534,6 +5534,21 @@ body.menu-open {
             line-height: 1.7;
         }
 
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
 
-
-        /* REMOVED: Fix double underline rules - no longer needed */

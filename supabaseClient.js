@@ -10,6 +10,16 @@ const supabase = window.supabase && window.supabase.createClient
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+// Add error handling and validation
+if (!supabase) {
+  console.error('Supabase client could not be initialized. Make sure to include the Supabase JS library.');
+} else {
+  console.log('✅ Supabase client initialized successfully');
+}
+
+// Make supabase client globally available
+window.supabaseClient = supabase;
+
 async function getCurrentUser() {
 	const { data: { user } } = await supabase.auth.getUser();
 	return user;
