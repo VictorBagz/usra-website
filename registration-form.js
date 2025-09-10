@@ -680,3 +680,296 @@ if (typeof clearFieldError !== 'function') {
         }
     }
 }
+
+// Add this diagnostic code at the end of your JavaScript file
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('schoolRegistrationForm');
+    if (!form) return;
+
+    // Diagnostic submission handler
+    const diagnosticSubmitHandler = async function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = document.querySelector('.submit-form');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Diagnosing...';
+        submitBtn.disabled = true;
+        
+        // Create diagnostic panel
+        const diagnosticPanel = document.createElement('div');
+        diagnosticPanel.style.cssText = `
+            background: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        `;
+        diagnosticPanel.innerHTML = '<h4 style="margin-top: 0; color: #007bff;">Registration Diagnostic Log:</h4>';
+        form.prepend(diagnosticPanel);
+        
+        const logMessage = (message, type = 'info') => {
+            const logEntry = document.createElement('div');
+            logEntry.style.cssText = `
+                padding: 5px 0;
+                border-bottom: 1px solid #eee;
+                color: ${type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#666'};
+                font-weight: ${type === 'error' ? 'bold' : 'normal'};
+            `;
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            diagnosticPanel.appendChild(logEntry);
+            diagnosticPanel.scrollTop = diagnosticPanel.scrollHeight;
+            console.log(message);
+        };
+
+        try {
+            logMessage('🚀 Starting registration diagnostic...', 'info');
+            
+            // Test 1: Check Supabase connection
+            logMessage('🔍 Testing Supabase connection...', 'info');
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+            logMessage('✅ Supabase client initialized', 'success');
+            
+            // Test 2: Test network connectivity to Supabase
+            logMessage('🌐 Testing network connectivity...', 'info');
+            try {
+                const testResponse = await fetch('https://ycdsyaenakevtozcomgk.supabase.co/rest/v1/', {
+                    method: 'HEAD',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljZHN5YWVuYWtldnRvemNvbWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0NzczMjAsImV4cCI6MjA3MjA1MzMyMH0.BxT4n22lnBEDL0TA7LNqIyti0LJ4dxGMgx5tOZiqQzE'
+                    }
+                });
+                if (testResponse.ok) {
+                    logMessage('✅ Network connectivity to Supabase OK', 'success');
+                } else {
+                    throw new Error(`Network test failed with status: ${testResponse.status}`);
+                }
+            } catch (networkError) {
+                logMessage(`❌ Network connectivity test failed: ${networkError.message}`, 'error');
+                throw networkError;
+            }
+            
+            // Collect form data
+            const formData = new FormData(form);
+            const schoolData = {
+                school_name: formData.get('schoolName'),
+                center_number: formData.get('centerNumber'),
+                school_email: formData.get('schoolEmail'),
+                school_phone1: formData.get('schoolPhone1'),
+                admin_full_name: formData.get('adminFullName'),
+                created_at: new Date().toISOString(),
+                status: 'pending',
+                registration_date: new Date().toISOString().split('T')[0]
+            };
+            
+            logMessage('📋 Form data collected successfully', 'success');
+            logMessage(`📧 Email to be used: ${schoolData.school_email}`, 'info');
+            
+            // Test 3: Try authentication with minimal data
+            logMessage('🔐 Attempting authentication...', 'info');
+            const authStartTime = Date.now();
+            
+            const { data: authData, error: authError } = await window.supabaseClient.auth.signUp({
+                email: schoolData.school_email,
+                password: formData.get('adminPassword'),
+                options: {
+                    data: {
+                        full_name: schoolData.admin_full_name,
+                        role: 'school_admin'
+                    }
+                }
+            });
+            
+            const authDuration = Date.now() - authStartTime;
+            logMessage(`⏱️ Authentication attempt took ${authDuration}ms`, 'info');
+            
+            if (authError) {
+                logMessage(`❌ Authentication failed: ${authError.message}`, 'error');
+                logMessage(`📝 Error details: ${JSON.stringify(authError)}`, 'error');
+                throw authError;
+            }
+            
+            if (!authData || !authData.user) {
+                logMessage('❌ Authentication returned no user data', 'error');
+                throw new Error('Authentication failed - no user returned');
+            }
+            
+            logMessage(`✅ Authentication successful! User ID: ${authData.user.id}`, 'success');
+            
+            // Test 4: Try database insert with minimal data
+            logMessage('💾 Attempting database insert...', 'info');
+            const dbStartTime = Date.now();
+            
+            const { error: dbError } = await window.supabaseClient
+                .from('schools')
+                .insert([{
+                    school_name: schoolData.school_name,
+                    school_email: schoolData.school_email,
+                    admin_full_name: schoolData.admin_full_name,
+                    user_id: authData.user.id,
+                    status: 'pending'
+                }]);
+            
+            const dbDuration = Date.now() - dbStartTime;
+            logMessage(`⏱️ Database insert took ${dbDuration}ms`, 'info');
+            
+            if (dbError) {
+                logMessage(`❌ Database insert failed: ${dbError.message}`, 'error');
+                logMessage(`📝 Error details: ${JSON.stringify(dbError)}`, 'error');
+                throw dbError;
+            }
+            
+            logMessage('✅ Database insert successful!', 'success');
+            
+            // Test 5: Try to read back the data
+            logMessage('🔍 Verifying data was saved...', 'info');
+            const { data: verifyData, error: verifyError } = await window.supabaseClient
+                .from('schools')
+                .select('*')
+                .eq('user_id', authData.user.id)
+                .single();
+            
+            if (verifyError) {
+                logMessage(`⚠️ Could not verify saved data: ${verifyError.message}`, 'error');
+            } else {
+                logMessage('✅ Data verification successful!', 'success');
+            }
+            
+            // Success! Save data and redirect
+            logMessage('🎉 Registration completed successfully!', 'success');
+            
+            // Hide diagnostic panel after 3 seconds
+            setTimeout(() => {
+                if (diagnosticPanel.parentNode) {
+                    diagnosticPanel.remove();
+                }
+            }, 3000);
+            
+            // Save data for profile page
+            const registrationData = {
+                ...schoolData,
+                user_id: authData.user.id,
+                admin_password: '********'
+            };
+            sessionStorage.setItem('registrationData', JSON.stringify(registrationData));
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.style.display = 'block';
+            successMessage.innerHTML = 'Registration successful! Redirecting to your profile...';
+            form.prepend(successMessage);
+            
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = `profile.html?schoolId=${authData.user.id}`;
+            }, 3000);
+            
+        } catch (error) {
+            logMessage(`🚨 REGISTRATION FAILED: ${error.message}`, 'error');
+            logMessage(`📝 Full error: ${error.stack || error}`, 'error');
+            
+            // Show user-friendly error
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            errorMessage.style.display = 'block';
+            errorMessage.innerHTML = `
+                <strong>Registration Failed</strong><br>
+                Error: ${error.message}<br>
+                Please check the diagnostic log above for details.<br>
+                If problems persist, contact support.
+            `;
+            form.prepend(errorMessage);
+            
+            // Re-enable submit button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            // Remove error message after 10 seconds
+            setTimeout(() => {
+                if (errorMessage.parentNode) {
+                    errorMessage.remove();
+                }
+            }, 10000);
+        }
+    };
+
+    // Remove any existing listeners and add our diagnostic handler
+    form.removeEventListener('submit', diagnosticSubmitHandler);
+    form.addEventListener('submit', diagnosticSubmitHandler);
+    
+    console.log('Diagnostic registration handler installed!');
+});
+
+
+// Fallback registration system - use if Supabase fails
+document.addEventListener('DOMContentLoaded', function() {
+    const useFallback = false; // Set to true if you want to force fallback mode
+    
+    if (useFallback) {
+        const form = document.getElementById('schoolRegistrationForm');
+        if (!form) return;
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = document.querySelector('.submit-form');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Collect form data
+                const formData = new FormData(form);
+                const schoolData = {
+                    school_name: formData.get('schoolName'),
+                    center_number: formData.get('centerNumber'),
+                    school_email: formData.get('schoolEmail'),
+                    admin_full_name: formData.get('adminFullName'),
+                    created_at: new Date().toISOString(),
+                    status: 'pending',
+                    registration_date: new Date().toISOString().split('T')[0],
+                    user_id: 'fallback_' + Date.now()
+                };
+                
+                // Save to session storage
+                sessionStorage.setItem('registrationData', JSON.stringify(schoolData));
+                
+                // Show success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'success-message';
+                successMessage.style.display = 'block';
+                successMessage.innerHTML = 'Registration successful! Redirecting to your profile...';
+                form.prepend(successMessage);
+                
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = `profile.html?schoolId=${schoolData.user_id}`;
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Fallback registration failed:', error);
+                
+                // Show error message
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'error-message';
+                errorMessage.style.display = 'block';
+                errorMessage.innerHTML = `Error: ${error.message || 'Registration failed. Please try again.'}`;
+                form.prepend(errorMessage);
+                
+                // Re-enable submit button
+                submitBtn.innerHTML = 'Submit Registration';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        console.log('Fallback registration system available (set useFallback = true to activate)');
+    }
+});

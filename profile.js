@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     const printButton = document.getElementById('printProfile');
 
-    // Load profile data from URL parameters or localStorage
+    // Load profile data from URL parameters or sessionStorage
     loadProfileData();
 
     // Set up print functionality
@@ -34,25 +34,26 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Try to get data from URL parameters first
             const urlParams = new URLSearchParams(window.location.search);
-            const registrationData = urlParams.get('data');
+            const schoolId = urlParams.get('schoolId');
             
             let data = null;
             
-            if (registrationData) {
-                // Decode data from URL parameter
-                data = JSON.parse(decodeURIComponent(registrationData));
+            // Look in sessionStorage first (where our registration system saves data)
+            const storedData = sessionStorage.getItem('registrationData');
+            if (storedData) {
+                data = JSON.parse(storedData);
             } else {
-                // Fallback to localStorage
-                const storedData = localStorage.getItem('registrationData');
-                if (storedData) {
-                    data = JSON.parse(storedData);
+                // Fallback to localStorage (for backward compatibility)
+                const localStorageData = localStorage.getItem('registrationData');
+                if (localStorageData) {
+                    data = JSON.parse(localStorageData);
                 }
             }
 
             if (data) {
                 populateProfileData(data);
-                // Clear localStorage after use for security
-                localStorage.removeItem('registrationData');
+                // Clear sessionStorage after use for security
+                sessionStorage.removeItem('registrationData');
             } else {
                 // No data available, redirect to registration
                 showNoDataMessage();
@@ -64,22 +65,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function populateProfileData(data) {
-        // School Information
-        setElementText('schoolName', data.schoolName);
-        setElementText('centerNumber', data.centerNumber);
-        setElementText('schoolEmail', data.schoolEmail);
-        setElementText('contact1', data.schoolPhone1);
+        // School Information - using snake_case field names to match registration data
+        setElementText('schoolName', data.school_name || data.schoolName);
+        setElementText('centerNumber', data.center_number || data.centerNumber);
+        setElementText('schoolEmail', data.school_email || data.schoolEmail);
+        setElementText('contact1', data.school_phone1 || data.schoolPhone1);
         setElementText('region', data.region);
         setElementText('district', data.district);
         setElementText('address', data.address);
 
         // Representative Information
-        setElementText('adminFullName', data.adminFullName);
+        setElementText('adminFullName', data.admin_full_name || data.adminFullName);
         setElementText('nin', data.nin);
         setElementText('role', data.role);
         setElementText('sex', data.sex);
         setElementText('qualification', data.qualification);
-        setElementText('adminContact1', data.contact1);
+        setElementText('adminContact1', data.contact1 || data.contact1);
 
         // Display school badge if available
         displaySchoolBadge(data);
@@ -88,18 +89,17 @@ document.addEventListener('DOMContentLoaded', function() {
         handleUploadedFiles(data);
 
         // Update page title with school name
-        if (data.schoolName) {
-            document.title = `${data.schoolName} - Registration Profile - USRA`;
+        if (data.school_name || data.schoolName) {
+            document.title = `${data.school_name || data.schoolName} - Registration Profile - USRA`;
         }
 
         // Display registration date if available
-        if (data.registrationDate) {
-            const registrationDate = new Date(data.registrationDate).toLocaleDateString('en-US', {
+        if (data.registration_date || data.registrationDate) {
+            const regDate = data.registration_date || data.registrationDate;
+            const registrationDate = new Date(regDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                day: 'numeric'
             });
             
             // Add registration date to the status section
@@ -114,9 +114,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySchoolBadge(data) {
-        const fileUrls = data.fileUrls || {};
-        const schoolBadgeUrl = fileUrls.schoolBadge || data.schoolBadge;
+        // Handle both direct URLs and base64 data
+        let schoolBadgeUrl = null;
         
+        // Check for base64 data first
+        if (data.school_badge && data.school_badge.data) {
+            schoolBadgeUrl = data.school_badge.data;
+        } else if (data.schoolBadge) {
+            schoolBadgeUrl = data.schoolBadge;
+        } else if (data.fileUrls && data.fileUrls.schoolBadge) {
+            schoolBadgeUrl = data.fileUrls.schoolBadge;
+        }
+
         if (schoolBadgeUrl) {
             // Find a good place to display the school badge
             const schoolInfoSection = document.querySelector('.info-section');
@@ -164,34 +173,64 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const files = [];
         
-        // Check for uploaded files from fileUrls object or direct file references
-        const fileUrls = data.fileUrls || {};
-        
-        if (fileUrls.schoolBadge || data.schoolBadge) {
+        // Handle base64 file data from our fallback system
+        if (data.school_badge && data.school_badge.data) {
             files.push({
                 name: 'School Badge',
                 type: 'image',
                 icon: 'fas fa-image',
-                url: fileUrls.schoolBadge || data.schoolBadge
+                url: data.school_badge.data
             });
         }
         
-        if (fileUrls.profilePhoto || data.profilePhoto) {
+        if (data.profile_photo && data.profile_photo.data) {
             files.push({
                 name: 'Profile Photo',
                 type: 'image',
                 icon: 'fas fa-camera',
-                url: fileUrls.profilePhoto || data.profilePhoto
+                url: data.profile_photo.data
             });
         }
         
-        if (fileUrls.supportingDocs || data.supportingDocs) {
+        if (data.supporting_docs && data.supporting_docs.data) {
             files.push({
                 name: 'TMIS Certificate',
                 type: 'document',
                 icon: 'fas fa-file-pdf',
-                url: fileUrls.supportingDocs || data.supportingDocs
+                url: data.supporting_docs.data
             });
+        }
+        
+        // Also handle direct URLs for backward compatibility
+        if (!files.length && data.fileUrls) {
+            const fileUrls = data.fileUrls;
+            
+            if (fileUrls.schoolBadge) {
+                files.push({
+                    name: 'School Badge',
+                    type: 'image',
+                    icon: 'fas fa-image',
+                    url: fileUrls.schoolBadge
+                });
+            }
+            
+            if (fileUrls.profilePhoto) {
+                files.push({
+                    name: 'Profile Photo',
+                    type: 'image',
+                    icon: 'fas fa-camera',
+                    url: fileUrls.profilePhoto
+                });
+            }
+            
+            if (fileUrls.supportingDocs) {
+                files.push({
+                    name: 'TMIS Certificate',
+                    type: 'document',
+                    icon: 'fas fa-file-pdf',
+                    url: fileUrls.supportingDocs
+                });
+            }
         }
 
         if (files.length > 0) {
@@ -316,6 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle browser back button
     window.addEventListener('popstate', function(event) {
         // Clear any stored registration data when navigating away
+        sessionStorage.removeItem('registrationData');
         localStorage.removeItem('registrationData');
     });
 
